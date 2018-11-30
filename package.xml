@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="2">
+  <name>robot_framework</name>
+  <version>0.0.0</version>
+  <description>The robot_framework package</description>
+  <maintainer email="agata.gniewek@aau.at">Agata Gniewek</maintainer>
+  <author email="michal.barcis@aau.at">Michał Barciś</author>
+
+
+  <!-- One license tag required, multiple allowed, one license per tag -->
+  <!-- Commonly used license strings: -->
+  <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
+  <license>TODO</license>
+
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>builtin_interfaces</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>sync_and_swarm_msgs</exec_depend>
+
+  <build_depend>builtin_interfaces</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>sync_and_swarm_msgs</build_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
