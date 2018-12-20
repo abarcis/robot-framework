@@ -1,5 +1,8 @@
 #! /usr/bin/env python
 
+import glob
+import os
+
 from setuptools import setup
 from setuptools import find_packages
 
@@ -13,6 +16,8 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        ('share/robot_framework/conf',
+         glob.glob(os.path.join('conf', '*'))),
     ],
     install_requires=[
         'setuptools',
@@ -34,4 +39,10 @@ setup(
     description="A framework for simulation and basic visualization of robots",
     license='TODO',
     tests_require=['pytest'],
+    entry_points={
+        'console_scripts': [
+            'visualization = robot_framework.visualization:main',
+            'mock_optitrack = robot_framework.mock_optitrack:main',
+        ],
+    },
 )
