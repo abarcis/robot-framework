@@ -36,7 +36,8 @@ class SystemStateManager:
 
     def create_agent(self, swarmalator_class, ident, params, orient_mode):
         self.params = params
-        swarmalator = swarmalator_class(ident, params, orient_mode)
+        swarmalator = swarmalator_class(ident, params, orient_mode,
+                                        recv_prob=self.recv_prob)
         SystemStateClass = self.get_system_state_class()
         args = self.get_system_state_args(ident)
         kwargs = self.get_system_state_kwargs(ident)

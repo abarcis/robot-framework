@@ -63,7 +63,8 @@ POSE_QOS = QoSProfile(
 
 
 class ROSCommunication():
-    def __init__(self, node, namespace):
+    def __init__(self, node, namespace, vis_topic=None,
+                 send_prob=1, recv_prob=1):
         self.node = node
         self.namespace = namespace
 
@@ -74,6 +75,15 @@ class ROSCommunication():
             StateMsg, '/global/sync_and_swarm/state',
             qos_profile=CUSTOM_QOS,
         )
+        self.vis_pub = None
+        if vis_topic is not None:
+            self.vis_pub = node.create_publisher(
+                StateMsg, vis_topic,
+                qos_profile=CUSTOM_QOS,
+            )
+
+        self.send_prob = send_prob
+
         self.state_sub = node.create_subscription(
             StateMsg, '/global/sync_and_swarm/state',
             self.run_state_callbacks,
@@ -124,7 +134,10 @@ class ROSCommunication():
                 )
             )
         )
-        self.state_pub.publish(msg)
+        if np.random.random_sample() < self.send_prob:
+            self.state_pub.publish(msg)
+        if self.vis_pub is not None:
+            self.vis_pub.publish(msg)
 
     def timer_callback(self):
         self.node.get_logger().debug(

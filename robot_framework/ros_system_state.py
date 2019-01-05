@@ -121,10 +121,13 @@ class ROSSpinManagerMixin:
 
 
 class ROSCommunicationManagerMixin:
-    def __init__(self, name_template, *args, **kwargs):
+    def __init__(self, name_template, vis_topic, *args, **kwargs):
         self.name_template = name_template
         self.comm_manager = ROSCommunicationManager()
         self.nodes.append(self.comm_manager)
+        self.vis_topic = vis_topic
+        self.send_prob = kwargs['send_prob']
+        self.recv_prob = kwargs['recv_prob']
         self.name_list = []
 
         super().__init__(*args, **kwargs)
@@ -135,7 +138,12 @@ class ROSCommunicationManagerMixin:
         kwargs = super().get_system_state_kwargs(ident)
         kwargs.update({
             'communication_interface': (
-                self.comm_manager.create_communication_node(name)
+                self.comm_manager.create_communication_node(
+                    name,
+                    self.vis_topic,
+                    self.send_prob,
+                    self.recv_prob,
+                )
             )
         })
         self.name_list.append(name)
@@ -162,8 +170,12 @@ class ROSStaticPoseUpdateMixin:
                 return
 
             start = time.time()
+
+            states = self.common_state.states.copy()
+            self.common_state.states.clear()
+
             for agent in self.agents:
-                agent.update_pose(time_step)
+                agent.update_pose(time_step, states)
 
             self.timer_node.get_logger().info("Usage: {}%%".format(
                 int(((time.time() - start)/time_step)*100)

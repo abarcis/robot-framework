@@ -43,7 +43,7 @@ class StaticPoseUpdateMixin:
             )
         self.state = initial_state
 
-    def update_pose(self, TIME_STEP):
+    def update_pose(self, TIME_STEP, states):
         position, orientation = update_position(
             self.state, self.vel,
             self.agent.orient_mode != OrientationOpts.CONSTRAINED,
@@ -53,7 +53,7 @@ class StaticPoseUpdateMixin:
         self.state.orientation = orientation
 
         state, vel, ang_vel = self.agent.update_state(
-            position, orientation, self.common_state.states.items(),
+            position, orientation, states.items(),
             TIME_STEP
         )
 
@@ -67,12 +67,15 @@ class StaticPoseUpdateMixin:
 
 
 class CommonStateMixin:
-    def __init__(self, common_state, *args, **kwargs):
+    def __init__(self, common_state, send_prob, recv_prob, *args, **kwargs):
         self.common_state = common_state
+        self.send_prob = send_prob
+        self.recv_prob = recv_prob
         super().__init__(*args, **kwargs)
 
     def send_state(self, state):
-        self.common_state.set_agent_state(self.agent.ident, state)
+        if np.random.random_sample() < self.send_prob:
+            self.common_state.set_agent_state(self.agent.ident, state)
         super().send_state(state)
 
 
@@ -88,14 +91,18 @@ class OfflineSystemState(
 
 
 class CommonOfflineStateManagerMixin:
-    def __init__(self, *args, **kwargs):
+    def __init__(self, send_prob, recv_prob, *args, **kwargs):
         self.common_state = CommonOfflineState()
+        self.send_prob = send_prob
+        self.recv_prob = recv_prob
         super().__init__(*args, **kwargs)
 
     def get_system_state_kwargs(self, ident):
         kwargs = super().get_system_state_kwargs(ident)
         kwargs.update({
             'common_state': self.common_state,
+            'send_prob': self.send_prob,
+            'recv_prob': self.recv_prob,
         })
         return kwargs
 
