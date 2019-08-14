@@ -39,22 +39,22 @@ class State:
 
         self.velocity = np.zeros(3)
 
-    def update(self, state_update, position_feedback=None, time_delta=None):
-        if state_update.phase_update is not None:
-            self.phase = state_update.phase_update
+    def update(self, ident, state_update=None, position_feedback=None):
+        if state_update:
+            if state_update.phase_update is not None:
+                self.phase = state_update.phase_update
 
-        if state_update.velocity_update is not None:
-            self.velocity = state_update.velocity_update
-            if position_feedback is not None:
-                new_position = position_feedback.get_new_position(
-                    self,
-                    state_update.velocity_update,
-                    time_delta
-                )
-                state_update.position_update = new_position
+            if state_update.velocity_update is not None:
+                self.velocity = state_update.velocity_update
 
-        if state_update.position_update is not None:
-            self.position = state_update.position_update
+            if state_update.position_update is not None:
+                self.position = state_update.position_update
+
+        if position_feedback is not None:
+            new_position = position_feedback.get_new_position(
+                ident
+            )
+            state_update.position_update = new_position
 
     def __str__(self):
         return "phase: {:.3f}, position: {}, velocity: {}".format(

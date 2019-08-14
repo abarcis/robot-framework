@@ -3,7 +3,7 @@ from state import State
 
 
 class SystemState:
-    def __init__(self, ids, knowledge, states=None):
+    def __init__(self, ids, knowledge, states=None, positions=None):
         self.ids = ids
         self.knowledge = knowledge
         if states is not None:
@@ -11,4 +11,7 @@ class SystemState:
         else:
             self.states = {}
             for ident in self.ids:
-                self.states[ident] = State()
+                position = None
+                if positions:
+                    position = positions[ident]
+                self.states[ident] = State(position=position)
