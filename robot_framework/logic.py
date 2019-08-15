@@ -40,7 +40,7 @@ class BasicPhaseLogic:
 
 class SyncAndSwarmPhaseLogic:
     def __init__(self):
-        self.K = -1
+        self.K = 1.
 
     def update_phase(self, state, positions, phases):
         position = state.position
@@ -60,9 +60,9 @@ class SyncAndSwarmPhaseLogic:
 class SyncAndSwarmPositionLogic:
     def __init__(self):
         self.J = 0.1
-        self.scale = 1
+        self.scale = 0.2
         self.agent_radius = 0.1
-        self.max_speed = 0.5
+        self.max_speed = 0.2
 
     def update_position(self, state, positions, phases):
         position = state.position
@@ -88,7 +88,7 @@ class SyncAndSwarmPositionLogic:
         return vel
 
 
-class BaseLogic:
+class BaseLogic(object):
     def __init__(self, position_logic_cls, phase_logic_cls):
         self.position_logic = position_logic_cls()
         self.phase_logic = phase_logic_cls()
@@ -111,9 +111,12 @@ class BaseLogic:
 
 class BasicLogic(BaseLogic):
     def __init__(self):
-        super().__init__(BasicPositionLogic, BasicPhaseLogic)
+        super(BasicLogic, self).__init__(BasicPositionLogic, BasicPhaseLogic)
 
 
 class SyncAndSwarmLogic(BaseLogic):
     def __init__(self):
-        super().__init__(SyncAndSwarmPositionLogic, SyncAndSwarmPhaseLogic)
+        super(SyncAndSwarmLogic, self).__init__(
+            SyncAndSwarmPositionLogic,
+            SyncAndSwarmPhaseLogic
+        )

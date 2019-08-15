@@ -54,7 +54,7 @@ class State:
             new_position = position_feedback.get_new_position(
                 ident
             )
-            state_update.position_update = new_position
+            self.position = new_position
 
     def __str__(self):
         return "phase: {:.3f}, position: {}, velocity: {}".format(
