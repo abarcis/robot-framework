@@ -15,6 +15,7 @@ DEFAULT_IDENT = "{}"
 def main():
     with keyboard.KeyPoller() as key_poller:
         params = {'J': 0.1, 'K': -1}
+        update_interval = 0.5
         agents_num = 30
         crazyswarm_interface = CrazySwarmInterface()
         ids = list(crazyswarm_interface.swarm.allcfs.crazyfliesById.keys())
@@ -33,14 +34,14 @@ def main():
             communication,
             system_state,
             crazyswarm_interface,
-            time_delta=0.1,
+            time_delta=update_interval,
             teleoperated_id=ids[0],
             key_poller=key_poller,
         )
 
         crazyswarm_interface.swarm.run_looped(
             controller.update,
-            update_interval=0.5,
+            update_interval=update_interval,
             takeoff_height=1.5,
             keep_height=True,
             interactive_takeoff=True,
