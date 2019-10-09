@@ -5,7 +5,7 @@ from state import StateUpdate
 
 
 class BasicPositionLogic:
-    def __init__(self):
+    def __init__(self, params={}):
         self.attraction_factor = 0.2
         self.repulsion_factor = 0.4
         self.agent_radius = 0.1
@@ -30,6 +30,9 @@ class BasicPositionLogic:
 
 
 class BasicPhaseLogic:
+    def __init__(self, params={}):
+        return
+
     def update_phase(self, state, states):
         # TODO put some basic logic
         phase = state.phase + 0.01
@@ -39,8 +42,8 @@ class BasicPhaseLogic:
 
 
 class SyncAndSwarmPhaseLogic:
-    def __init__(self):
-        self.K = 1.
+    def __init__(self, params={}):
+        self.K = params['K']
 
     def update_phase(self, state, positions, phases):
         position = state.position
@@ -58,8 +61,8 @@ class SyncAndSwarmPhaseLogic:
 
 
 class SyncAndSwarmPositionLogic:
-    def __init__(self):
-        self.J = 0.1
+    def __init__(self, params={}):
+        self.J = params['J']
         self.scale = 0.2
         self.agent_radius = 0.1
         self.max_speed = 0.2
@@ -89,9 +92,9 @@ class SyncAndSwarmPositionLogic:
 
 
 class BaseLogic(object):
-    def __init__(self, position_logic_cls, phase_logic_cls):
-        self.position_logic = position_logic_cls()
-        self.phase_logic = phase_logic_cls()
+    def __init__(self, position_logic_cls, phase_logic_cls, params={}):
+        self.position_logic = position_logic_cls(params)
+        self.phase_logic = phase_logic_cls(params)
 
     def update_state(self, state, states):
         positions_and_phases = [(s.position, s.phase) for ident, s in states]
@@ -110,13 +113,18 @@ class BaseLogic(object):
 
 
 class BasicLogic(BaseLogic):
-    def __init__(self):
+    def __init__(self, params={}):
         super(BasicLogic, self).__init__(BasicPositionLogic, BasicPhaseLogic)
 
 
 class SyncAndSwarmLogic(BaseLogic):
-    def __init__(self):
+    def __init__(self, params={}):
+        if 'J' not in params.keys():
+            params['J'] = 0.1
+        if 'K' not in params.keys():
+            params['K'] = -1
         super(SyncAndSwarmLogic, self).__init__(
             SyncAndSwarmPositionLogic,
-            SyncAndSwarmPhaseLogic
+            SyncAndSwarmPhaseLogic,
+            params
         )

@@ -14,17 +14,15 @@ DEFAULT_IDENT = "{}"
 
 def main():
     with keyboard.KeyPoller() as key_poller:
+        params = {'J': 0.1, 'K': -1}
         agents_num = 30
-        ids = [
-            DEFAULT_IDENT.format(i) for i in range(agents_num)
-        ]
         crazyswarm_interface = CrazySwarmInterface()
         ids = list(crazyswarm_interface.swarm.allcfs.crazyfliesById.keys())
         positions = {
             cf.id: cf.initialPosition
             for cf in crazyswarm_interface.swarm.allcfs.crazyflies
         }
-        logic = SyncAndSwarmLogic()
+        logic = SyncAndSwarmLogic(params)
         knowledge = SharedKnowledge(ids)
         system_state = SystemState(ids, knowledge, positions=positions)
         communication = OfflineCommunication(system_state)
@@ -42,9 +40,10 @@ def main():
 
         crazyswarm_interface.swarm.run_looped(
             controller.update,
-            update_interval=0.1,
-            takeoff_height=0.5,
-            keep_height=True
+            update_interval=0.5,
+            takeoff_height=1.5,
+            keep_height=True,
+            interactive_takeoff=True,
         )
 
 

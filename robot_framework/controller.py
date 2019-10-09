@@ -77,6 +77,8 @@ class OfflineControllerWithTeleoperation(BaseController):
         self.teleop_speed = 0.1
         self.teleop_on = True
         self.teleop_velocity = None
+        self.remember_teleop = 3
+        self.was_pressed = 0
 
         self.key_poller = kwargs.pop('key_poller')
 
@@ -96,20 +98,28 @@ class OfflineControllerWithTeleoperation(BaseController):
             while(self.key_poller.poll()):
                 pass  # clear input stream
 
-            if pressed_key is not None or self.teleop_velocity is not None:
-                self.teleop_velocity = None
+            if self.was_pressed > 0:
+                self.was_pressed -= 1
+                if self.was_pressed == 0:
+                    self.teleop_velocity = None
+
+            if pressed_key is not None:
                 if pressed_key == 'w':
                     logging.debug("teleop: up")
                     self.teleop_velocity = np.array([0, self.teleop_speed, 0])
+                    self.was_pressed = self.remember_teleop
                 if pressed_key == 's':
                     logging.debug("teleop: down")
                     self.teleop_velocity = np.array([0, -self.teleop_speed, 0])
+                    self.was_pressed = self.remember_teleop
                 if pressed_key == 'd':
                     logging.debug("teleop: right")
                     self.teleop_velocity = np.array([self.teleop_speed, 0, 0])
+                    self.was_pressed = self.remember_teleop
                 if pressed_key == 'a':
                     logging.debug("teleop: left")
                     self.teleop_velocity = np.array([-self.teleop_speed, 0, 0])
+                    self.was_pressed = self.remember_teleop
         for ident in self.system_state.ids:
             self.system_state.states[ident].update(
                 ident,
@@ -121,8 +131,10 @@ class OfflineControllerWithTeleoperation(BaseController):
                 self.system_state.knowledge.get_states_except_own(ident)
             )
 
-            if (self.teleoperated_id == ident and
-                self.teleop_velocity is not None):
+            if (
+                self.teleoperated_id == ident and
+                self.teleop_velocity is not None
+            ):
                 state_update.velocity_update = self.teleop_velocity
 
             self.system_state.states[ident].update(
