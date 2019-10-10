@@ -8,11 +8,13 @@ class StateUpdate:
         self,
         position_update=None,
         phase_update=None,
-        velocity_update=None
+        velocity_update=None,
+        teleop_update=None
     ):
         self.position_update = position_update
         self.phase_update = phase_update
         self.velocity_update = velocity_update
+        self.teleop_update = teleop_update
 
     def __str__(self):
         return "phase update: {}, \
@@ -38,6 +40,7 @@ class State:
             self.position[2] = 0
 
         self.velocity = np.zeros(3)
+        self.toggle_teleop = False
 
     def update(self, ident, state_update=None, position_feedback=None):
         if state_update:
@@ -49,6 +52,11 @@ class State:
 
             if state_update.position_update is not None:
                 self.position = state_update.position_update
+
+            if state_update.teleop_update:
+                self.is_teleoperated = True
+            else:
+                self.is_teleoperated = False
 
         if position_feedback is not None:
             new_position = position_feedback.get_new_position(

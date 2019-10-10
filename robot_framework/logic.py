@@ -52,7 +52,7 @@ class SyncAndSwarmPhaseLogic:
         pos_diffs = positions - position
         phase_diffs = phases - phase
         norm = np.linalg.norm(pos_diffs, axis=1)
-        return (phase + self.K / N * np.sum(
+        return (phase + float(self.K) / N * np.sum(
             np.array([
                 np.sin(phase_diffs[j]) / norm[j]
                 for j in range(N)
@@ -64,8 +64,9 @@ class SyncAndSwarmPositionLogic:
     def __init__(self, params={}):
         self.J = params['J']
         self.scale = 0.2
-        self.agent_radius = 0.1
-        self.max_speed = 0.2
+        self.agent_radius = 0.25
+        self.max_speed = 0.1
+        self.rep_coeff = 1.5
 
     def update_position(self, state, positions, phases):
         position = state.position
@@ -82,7 +83,7 @@ class SyncAndSwarmPositionLogic:
             pos_diffs[j]/max(norm[j] - self.agent_radius, 0.000001)**2
             for j in range(N)
         ])
-        vel = self.scale * 1./N * np.sum(attr - rep, axis=0)
+        vel = self.scale * 1./N * np.sum(attr - self.rep_coeff * rep, axis=0)
         vel[2] = 0  # controlling only XY
         speed = np.linalg.norm(vel)
         if speed > self.max_speed:

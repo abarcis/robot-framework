@@ -79,6 +79,8 @@ class OfflineControllerWithTeleoperation(BaseController):
         self.teleop_velocity = None
         self.remember_teleop = 3
         self.was_pressed = 0
+        self.teleop_blinking = kwargs.pop('teleop_blinking')
+        self.teleop_led_on = True
 
         self.key_poller = kwargs.pop('key_poller')
 
@@ -120,6 +122,7 @@ class OfflineControllerWithTeleoperation(BaseController):
                     logging.debug("teleop: left")
                     self.teleop_velocity = np.array([-self.teleop_speed, 0, 0])
                     self.was_pressed = self.remember_teleop
+
         for ident in self.system_state.ids:
             self.system_state.states[ident].update(
                 ident,
@@ -136,6 +139,7 @@ class OfflineControllerWithTeleoperation(BaseController):
                 self.teleop_velocity is not None
             ):
                 state_update.velocity_update = self.teleop_velocity
+                state_update.teleop_update = True
 
             self.system_state.states[ident].update(
                 ident,
