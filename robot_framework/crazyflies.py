@@ -21,13 +21,13 @@ class CrazySwarmInterface:
             cf.led(r, g, b)
             if (
                 states[cf.id].is_teleoperated and
-                not self.was_teleoperated
+                not self.was_teleoperated == cf.id
             ):
-                self.was_teleoperated = True
-                # cf.turn_headlight_on()
+                self.was_teleoperated = cf.id
+                cf.turn_headlight_on()
             elif (
                 not states[cf.id].is_teleoperated and
-                self.was_teleoperated
+                self.was_teleoperated == cf.id
             ):
                 self.was_teleoperated = False
-                # cf.turn_headlight_on(0)
+                cf.turn_headlight_on(0)

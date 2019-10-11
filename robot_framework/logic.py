@@ -63,10 +63,10 @@ class SyncAndSwarmPhaseLogic:
 class SyncAndSwarmPositionLogic:
     def __init__(self, params={}):
         self.J = params['J']
-        self.scale = 0.2
+        self.scale = 0.7
         self.agent_radius = 0.25
-        self.max_speed = 0.1
-        self.rep_coeff = 1.5
+        self.max_speed = 0.2
+        self.rep_coeff = 1.
 
     def update_position(self, state, positions, phases):
         position = state.position

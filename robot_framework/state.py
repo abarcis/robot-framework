@@ -32,6 +32,7 @@ class State:
             self.phase = phase
         else:
             self.phase = np.random.random()
+        print(self.phase)
 
         if position is not None:
             self.position = position

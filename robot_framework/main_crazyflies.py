@@ -14,8 +14,8 @@ DEFAULT_IDENT = "{}"
 
 def main():
     with keyboard.KeyPoller() as key_poller:
-        params = {'J': 0.1, 'K': 1}
-        update_interval = 0.5
+        params = {'J': 1, 'K': -0.25}
+        update_interval = 0.25
         agents_num = 30
         crazyswarm_interface = CrazySwarmInterface()
         ids = list(crazyswarm_interface.swarm.allcfs.crazyfliesById.keys())
@@ -23,9 +23,20 @@ def main():
             cf.id: cf.initialPosition
             for cf in crazyswarm_interface.swarm.allcfs.crazyflies
         }
+        phases = {
+            cf.id: 1. / len(ids) * i
+            for i, cf
+            in enumerate(crazyswarm_interface.swarm.allcfs.crazyflies)
+        }
+        print(phases)
         logic = SyncAndSwarmLogic(params)
         knowledge = SharedKnowledge(ids)
-        system_state = SystemState(ids, knowledge, positions=positions)
+        system_state = SystemState(
+            ids,
+            knowledge,
+            positions=positions,
+            phases=phases
+        )
         communication = OfflineCommunication(system_state)
         controller = OfflineControllerWithTeleoperation(
             agents_num,
