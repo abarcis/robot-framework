@@ -17,8 +17,6 @@ class CrazySwarmInterface:
     def update(self, states):
         for cf in self.swarm.allcfs.crazyflies:
             cf.vel(states[cf.id].velocity)
-            r, g, b = colorsys.hsv_to_rgb(states[cf.id].phase, 1, 1)
-            cf.led(r, g, b)
             if (
                 states[cf.id].is_teleoperated and
                 not self.was_teleoperated == cf.id
@@ -31,3 +29,6 @@ class CrazySwarmInterface:
             ):
                 self.was_teleoperated = False
                 cf.turn_headlight_on(0)
+            else:
+                r, g, b = colorsys.hsv_to_rgb(states[cf.id].phase, 1, 1)
+                cf.led(r, g, b)
