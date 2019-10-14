@@ -2,6 +2,7 @@
 
 import logging
 import numpy as np
+import random
 
 
 class BaseController(object):
@@ -13,6 +14,7 @@ class BaseController(object):
         communication,
         system_state,
         visualization,
+        params_list=[{}],
         sleep_fcn=None,
         time_delta=0.1,
     ):
@@ -24,6 +26,19 @@ class BaseController(object):
         self.system_state = system_state
         self.visualization = visualization
         self.sleep_fcn = sleep_fcn
+        self.params_list = params_list
+
+    def reassign_phases(self):
+        ids = self.system_state.ids
+        uniform_phases = [1. / len(ids) * i for i in range(len(ids))]
+        random.shuffle(uniform_phases)
+        for i, ident in enumerate(ids):
+            self.system_state.states[ident].phase = uniform_phases[i]
+
+            self.communication.send_state(
+                ident,
+                self.system_state.states[ident]
+            )
 
     def run(self):
         raise NotImplementedError()
@@ -122,12 +137,25 @@ class OfflineControllerWithTeleoperation(BaseController):
                     logging.debug("teleop: left")
                     self.teleop_velocity = np.array([-self.teleop_speed, 0, 0])
                     self.was_pressed = self.remember_teleop
+                if pressed_key in [
+                    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
+                ]:
+                    try:
+                        new_params = self.params_list[int(pressed_key)]
+                        print("Changing parameters to: {}".format(new_params))
+                        self.logic.update_params(new_params)
+                        self.reassign_phases()
+                    except IndexError:
+                        print("No parameter set with this index")
 
         for ident in self.system_state.ids:
             self.system_state.states[ident].update(
                 ident,
                 position_feedback=self.position_feedback,
             )
+
+            if self.system_state.states[ident].position is None:
+                continue
 
             state_update = self.logic.update_state(
                 self.system_state.states[ident],

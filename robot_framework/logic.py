@@ -45,6 +45,11 @@ class SyncAndSwarmPhaseLogic:
     def __init__(self, params={}):
         self.K = params['K']
 
+    def update_params(self, params):
+        if 'K' not in params.keys():
+            return
+        self.K = params['K']
+
     def update_phase(self, state, positions, phases):
         position = state.position
         phase = state.phase * 2 * np.pi
@@ -66,7 +71,12 @@ class SyncAndSwarmPositionLogic:
         self.scale = 0.7
         self.agent_radius = 0.25
         self.max_speed = 0.2
-        self.rep_coeff = 1.
+        self.rep_coeff = 1.5
+
+    def update_params(self, params):
+        if 'J' not in params.keys():
+            return
+        self.J = params['J']
 
     def update_position(self, state, positions, phases):
         position = state.position
@@ -97,8 +107,16 @@ class BaseLogic(object):
         self.position_logic = position_logic_cls(params)
         self.phase_logic = phase_logic_cls(params)
 
+    def update_params(self, params):
+        self.position_logic.update_params(params)
+        self.phase_logic.update_params(params)
+
     def update_state(self, state, states):
-        positions_and_phases = [(s.position, s.phase) for ident, s in states]
+        positions_and_phases = [
+            (s.position, s.phase)
+            for ident, s in states
+            if s.position is not None
+        ]
         positions, phases = zip(*positions_and_phases)
         positions = np.array(positions)
         phases = np.array(phases) * 2 * np.pi

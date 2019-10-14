@@ -7,6 +7,7 @@ from communication import OfflineCommunication
 from system_state import SystemState
 from crazyflies import CrazySwarmInterface
 import keyboard
+import random
 
 
 DEFAULT_IDENT = "{}"
@@ -14,7 +15,12 @@ DEFAULT_IDENT = "{}"
 
 def main():
     with keyboard.KeyPoller() as key_poller:
-        params = {'J': 1, 'K': -0.25}
+        params = [
+            {'J': 0.1, 'K': 1},
+            {'J': 0.1, 'K': -1},
+            {'J': 1, 'K': 0},
+            {'J': 1, 'K': -0.25},
+        ]
         update_interval = 0.25
         agents_num = 30
         crazyswarm_interface = CrazySwarmInterface()
@@ -23,13 +29,14 @@ def main():
             cf.id: cf.initialPosition
             for cf in crazyswarm_interface.swarm.allcfs.crazyflies
         }
+        uniform_phases = [1. / len(ids) * i for i in range(len(ids))]
+        random.shuffle(uniform_phases)
         phases = {
-            cf.id: 1. / len(ids) * i
+            cf.id: uniform_phases[i]
             for i, cf
             in enumerate(crazyswarm_interface.swarm.allcfs.crazyflies)
         }
-        print(phases)
-        logic = SyncAndSwarmLogic(params)
+        logic = SyncAndSwarmLogic(params[0])
         knowledge = SharedKnowledge(ids)
         system_state = SystemState(
             ids,
@@ -49,6 +56,7 @@ def main():
             teleoperated_id=ids[0],
             key_poller=key_poller,
             teleop_blinking=True,
+            params_list=params,
         )
 
         crazyswarm_interface.swarm.run_looped(

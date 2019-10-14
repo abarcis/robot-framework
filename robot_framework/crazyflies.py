@@ -12,7 +12,11 @@ class CrazySwarmInterface:
             cf.set_bounding_box(2.2, 3.5, 4)
 
     def get_new_position(self, ident):
-        return self.swarm.allcfs.crazyfliesById[ident].position()
+        cf = self.swarm.allcfs.crazyfliesById[ident]
+        if cf.broken:
+            return None
+        else:
+            return cf.position()
 
     def update(self, states):
         for cf in self.swarm.allcfs.crazyflies:
