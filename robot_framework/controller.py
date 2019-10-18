@@ -90,6 +90,7 @@ class OfflineControllerWithTeleoperation(BaseController):
     def __init__(self, *args, **kwargs):
         self.teleoperated_id = kwargs.pop('teleoperated_id')
         self.teleop_speed = 0.1
+        self.max_speed = 0.2
         self.teleop_on = True
         self.teleop_velocity = None
         self.remember_teleop = 3
@@ -166,8 +167,11 @@ class OfflineControllerWithTeleoperation(BaseController):
                 self.teleoperated_id == ident and
                 self.teleop_velocity is not None
             ):
-                state_update.velocity_update = self.teleop_velocity
+                state_update.velocity_update *= 0.5
+                state_update.velocity_update += self.teleop_velocity
+
                 state_update.teleop_update = True
+
 
             self.system_state.states[ident].update(
                 ident,
