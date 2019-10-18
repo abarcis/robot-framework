@@ -16,10 +16,10 @@ DEFAULT_IDENT = "{}"
 def main():
     with keyboard.KeyPoller() as key_poller:
         params = [
-            {'J': 0.1, 'K': 1},
-            {'J': 0.1, 'K': -1},
-            {'J': 1, 'K': 0},
-            {'J': 1, 'K': -0.25},
+            {'J': 0.1, 'K': 1, 'align_center': True},
+            {'J': 0.1, 'K': -1, 'align_center': True},
+            {'J': 1, 'K': 0, 'align_center': True},
+            {'J': 1, 'K': -0.25, 'align_center': True},
         ]
         update_interval = 0.25
         agents_num = 30
