@@ -62,7 +62,7 @@ def main():
         crazyswarm_interface.swarm.run_looped(
             controller.update,
             update_interval=update_interval,
-            takeoff_height=1.5,
+            takeoff_height=3,
             keep_height=True,
             interactive_takeoff=True,
         )
