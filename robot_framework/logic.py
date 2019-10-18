@@ -68,12 +68,15 @@ class SyncAndSwarmPhaseLogic:
 class SyncAndSwarmPositionLogic:
     def __init__(self, params={}):
         self.J = params['J']
+        self.align_center = params.get('align_center', False)
         self.scale = 0.7
         self.agent_radius = 0.25
         self.max_speed = 0.2
         self.rep_coeff = 1.5
+        self.align_coeff = 0.05
 
     def update_params(self, params):
+        self.align_center = params.get('align_center', False)
         if 'J' not in params.keys():
             return
         self.J = params['J']
@@ -85,6 +88,9 @@ class SyncAndSwarmPositionLogic:
         pos_diffs = positions - position
         phase_diffs = phases - phase
         norm = np.linalg.norm(pos_diffs, axis=1)
+        too_close = [n for n in norm if n < 0.9]
+        if too_close:
+            print(too_close)
         attr = np.array([
             pos_diffs[j]/norm[j] * (1 + self.J * np.cos(phase_diffs[j]))
             for j in range(N)
@@ -94,6 +100,8 @@ class SyncAndSwarmPositionLogic:
             for j in range(N)
         ])
         vel = self.scale * 1./N * np.sum(attr - self.rep_coeff * rep, axis=0)
+        if self.align_center:
+            vel -= self.align_coeff * position
         vel[2] = 0  # controlling only XY
         speed = np.linalg.norm(vel)
         if speed > self.max_speed:
