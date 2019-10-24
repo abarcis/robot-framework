@@ -7,7 +7,7 @@ import colorsys
 class CrazySwarmInterface:
     def __init__(self):
         self.swarm = KPKCrazySwarm()
-        self.was_teleoperated = False
+        self.was_on = False
         for cf in self.swarm.allcfs.crazyflies:
             cf.set_bounding_box(2.2, 3.5, 4)
 
@@ -20,19 +20,19 @@ class CrazySwarmInterface:
 
     def update(self, states):
         for cf in self.swarm.allcfs.crazyflies:
+            r, g, b = colorsys.hsv_to_rgb(states[cf.id].phase, 1, 1)
             cf.vel(states[cf.id].velocity)
             if (
                 states[cf.id].is_teleoperated and
-                not self.was_teleoperated == cf.id
+                not self.was_on == cf.id
             ):
-                self.was_teleoperated = cf.id
-                cf.turn_headlight_on()
+                self.was_on = cf.id
+                cf.led(0, 0, 0)
             elif (
-                not states[cf.id].is_teleoperated and
-                self.was_teleoperated == cf.id
+                states[cf.id].is_teleoperated and
+                self.was_on == cf.id
             ):
-                self.was_teleoperated = False
-                cf.turn_headlight_on(0)
+                self.was_on = False
+                cf.led(r, g, b)
             else:
-                r, g, b = colorsys.hsv_to_rgb(states[cf.id].phase, 1, 1)
                 cf.led(r, g, b)

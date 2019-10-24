@@ -71,7 +71,7 @@ class SyncAndSwarmPositionLogic:
         self.align_center = params.get('align_center', False)
         self.scale = 0.7
         self.agent_radius = 0.25
-        self.max_speed = 0.2
+        self.max_speed = 0.1
         self.rep_coeff = 1.5
         self.align_coeff = 0.05
 
@@ -90,7 +90,7 @@ class SyncAndSwarmPositionLogic:
         norm = np.linalg.norm(pos_diffs, axis=1)
         too_close = [n for n in norm if n < 0.9]
         if too_close:
-            print(too_close)
+            print("Warning: TOO CLOSE! {}".format(too_close))
         attr = np.array([
             pos_diffs[j]/norm[j] * (1 + self.J * np.cos(phase_diffs[j]))
             for j in range(N)
