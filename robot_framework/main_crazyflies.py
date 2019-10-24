@@ -63,6 +63,7 @@ def main():
             controller.update,
             update_interval=update_interval,
             takeoff_height=3,
+            takeoff_time=7,
             keep_height=True,
             interactive_takeoff=True,
         )
