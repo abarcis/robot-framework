@@ -2,6 +2,7 @@
 
 from pykpkswarm.kpkswarm import KPKCrazySwarm
 import colorsys
+import random
 
 
 class CrazySwarmInterface:
@@ -17,6 +18,19 @@ class CrazySwarmInterface:
             return None
         else:
             return cf.position()
+
+    def kill_random_drone(self):
+        still_alive = [
+            d for d in self.swarm.allcfs.crazyflies
+            if not d.broken
+        ]
+        to_kill = random.choice(still_alive)
+        print("Killing drone #{}".format(to_kill.id))
+        to_kill.broken = True
+        to_kill.land(
+            targetHeight=0.2,
+            duration=3
+        )
 
     def update(self, states):
         for cf in self.swarm.allcfs.crazyflies:

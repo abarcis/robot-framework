@@ -94,9 +94,13 @@ class OfflineControllerWithTeleoperation(BaseController):
         self.teleop_on = True
         self.teleop_velocity = None
         self.remember_teleop = 3
+        """
+        For how many iterations the key press should persist.
+        """
         self.was_pressed = 0
         self.teleop_blinking = kwargs.pop('teleop_blinking')
         self.teleop_led_on = True
+        self.keyboard_callbacks = kwargs.pop('keyboard_callbacks', {})
 
         self.key_poller = kwargs.pop('key_poller')
 
@@ -112,9 +116,12 @@ class OfflineControllerWithTeleoperation(BaseController):
 
     def update(self, *args):
         if self.teleop_on:
-            pressed_key = self.key_poller.poll()
-            while(self.key_poller.poll()):
-                pass  # clear input stream
+            pressed_key = None
+            new_key = True
+            while(new_key):
+                new_key = self.key_poller.poll()
+                if new_key:
+                    pressed_key = new_key
 
             if self.was_pressed > 0:
                 self.was_pressed -= 1
@@ -148,6 +155,8 @@ class OfflineControllerWithTeleoperation(BaseController):
                         self.reassign_phases()
                     except IndexError:
                         print("No parameter set with this index")
+                if pressed_key in self.keyboard_callbacks.keys():
+                    self.keyboard_callbacks[pressed_key]()
 
         for ident in self.system_state.ids:
             self.system_state.states[ident].update(
@@ -171,7 +180,6 @@ class OfflineControllerWithTeleoperation(BaseController):
                 state_update.velocity_update += self.teleop_velocity
 
                 state_update.teleop_update = True
-
 
             self.system_state.states[ident].update(
                 ident,

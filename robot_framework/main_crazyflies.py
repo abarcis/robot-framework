@@ -16,10 +16,12 @@ DEFAULT_IDENT = "{}"
 def main():
     with keyboard.KeyPoller() as key_poller:
         params = [
-            {'J': 0.1, 'K': 1, 'align_center': True},
-            {'J': 0.1, 'K': -1, 'align_center': True},
-            {'J': 1, 'K': 0, 'align_center': True},
-            {'J': 1, 'K': -0.25, 'align_center': True},
+            {'J': 0.1, 'K': 1, 'align_center': True, 'name': "STATIC SYNC"},
+            {'J': 0.1, 'K': -1, 'align_center': True, 'name': "STATIC ASYNC"},
+            {'J': 1, 'K': 0, 'align_center': True,
+             'name': "STATIC PHASE WAVE"},
+            {'J': 1, 'K': -0.25, 'align_center': True, 'name':
+             "ACTIVE PHASE WAVE"},
         ]
         update_interval = 0.5
         agents_num = 30
@@ -45,6 +47,7 @@ def main():
             phases=phases
         )
         communication = OfflineCommunication(system_state)
+
         controller = OfflineControllerWithTeleoperation(
             agents_num,
             logic,
@@ -57,6 +60,9 @@ def main():
             key_poller=key_poller,
             teleop_blinking=True,
             params_list=params,
+            keyboard_callbacks={
+                'k': crazyswarm_interface.kill_random_drone,
+            }
         )
 
         crazyswarm_interface.swarm.run_looped(
