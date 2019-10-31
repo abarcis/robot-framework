@@ -21,7 +21,7 @@ def main():
             {'J': 1, 'K': 0, 'align_center': True},
             {'J': 1, 'K': -0.25, 'align_center': True},
         ]
-        update_interval = 0.25
+        update_interval = 0.5
         agents_num = 30
         crazyswarm_interface = CrazySwarmInterface()
         ids = list(crazyswarm_interface.swarm.allcfs.crazyfliesById.keys())
