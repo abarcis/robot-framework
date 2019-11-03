@@ -6,6 +6,7 @@ import random
 
 
 class BaseController(object):
+    PHASE_ORDERING = ('RANDOM', 'LEXICOGRAPHIC', 'ANGLE')
     def __init__(
         self,
         agents_num,
@@ -28,17 +29,59 @@ class BaseController(object):
         self.sleep_fcn = sleep_fcn
         self.params_list = params_list
 
-    def reassign_phases(self):
-        ids = self.system_state.ids
-        uniform_phases = [1. / len(ids) * i for i in range(len(ids))]
-        random.shuffle(uniform_phases)
-        for i, ident in enumerate(ids):
-            self.system_state.states[ident].phase = uniform_phases[i]
+    @staticmethod
+    def gen_fixed_permutation(l, seed=3):
+        s = list(range(len(l)))
+        i = 0
+        for _ in range(len(l)):
+            i += seed
+            i %= len(s)
+            yield l[s.pop(i)]
+            i -= 1
 
-            self.communication.send_state(
-                ident,
-                self.system_state.states[ident]
-            )
+    def reassign_phases(self, phase_ordering='RANDOM'):
+        ids = self.system_state.ids
+        uniform_phases = [1. / len(ids) * i #+ random.uniform(-0.01, 0.01)
+                          for i in range(len(ids))]
+        if (
+            phase_ordering in self.PHASE_ORDERING
+            and phase_ordering != 'RANDOM'
+        ):
+            pos = [tuple(self.system_state.states[i].position) for i in ids]
+            agents = zip(ids, pos)
+            if phase_ordering == 'LEXICOGRAPHIC':
+
+                def key(x):
+                    return x[1]
+            elif phase_ordering == 'ANGLE':
+                middle = (
+                    np.average([p[0] for p in pos]),
+                    np.average([p[1] for p in pos])
+                )
+
+                def key(x):
+                    return np.arctan2(x[1][0] - middle[0], x[1][1] - middle[1])
+                # x_from_middle = [p[0] - middle[0] for p in pos]
+                # y_from_middle = [p[1] - middle[1] for p in pos]
+                # angle = tuple(np.arctan2(x_from_middle, y_from_middle))
+            agents.sort(key=key)
+            phases = list(self.gen_fixed_permutation(uniform_phases, seed=1))
+            agents_with_phases = zip(agents, phases)
+            for agent in agents_with_phases:
+                self.system_state.states[agent[0][0]].phase = agent[1]
+                self.communication.send_state(
+                    agent[0][0],
+                    self.system_state.states[agent[0][0]]
+                )
+        else:
+            random.shuffle(uniform_phases)
+            for i, ident in enumerate(ids):
+                self.system_state.states[ident].phase = uniform_phases[i]
+
+                self.communication.send_state(
+                    ident,
+                    self.system_state.states[ident]
+                )
 
     def run(self):
         raise NotImplementedError()
@@ -145,7 +188,7 @@ class OfflineControllerWithTeleoperation(BaseController):
                         new_params = self.params_list[int(pressed_key)]
                         print("Changing parameters to: {}".format(new_params))
                         self.logic.update_params(new_params)
-                        self.reassign_phases()
+                        self.reassign_phases(phase_ordering='ANGLE')
                     except IndexError:
                         print("No parameter set with this index")
 
