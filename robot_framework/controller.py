@@ -202,7 +202,10 @@ class OfflineControllerWithTeleoperation(BaseController):
                         new_params = self.params_list[int(pressed_key)]
                         print("Changing parameters to: {}".format(new_params))
                         self.logic.update_params(new_params)
-                        self.reassign_phases(phase_ordering='ANGLE')
+                        if new_params['name'] == 'STATIC PHASE WAVE':
+                            self.reassign_phases(phase_ordering='ANGLE')
+                        else:
+                            self.reassign_phases(phase_ordering='RANDOM')
                     except IndexError:
                         print("No parameter set with this index")
                 if pressed_key in self.keyboard_callbacks.keys():
