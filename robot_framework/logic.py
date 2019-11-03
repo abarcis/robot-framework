@@ -44,6 +44,7 @@ class BasicPhaseLogic:
 class SyncAndSwarmPhaseLogic:
     def __init__(self, params={}):
         self.K = params['K']
+        self.natural_frequency = 0
 
     def update_params(self, params):
         if 'K' not in params.keys():
@@ -57,7 +58,8 @@ class SyncAndSwarmPhaseLogic:
         pos_diffs = positions - position
         phase_diffs = phases - phase
         norm = np.linalg.norm(pos_diffs, axis=1)
-        return (phase + float(self.K) / N * np.sum(
+        # TODO add dependency on update interval to natural frequency
+        return (self.natural_frequency + phase + float(self.K) / N * np.sum(
             np.array([
                 np.sin(phase_diffs[j]) / norm[j]
                 for j in range(N)

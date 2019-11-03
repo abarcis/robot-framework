@@ -32,6 +32,7 @@ class BaseController(object):
     @staticmethod
     def gen_fixed_permutation(l, seed=3):
         s = list(range(len(l)))
+        #s = [0, 1, 2, 4, 6, 3, 5, 7]
         i = 0
         for _ in range(len(l)):
             i += seed
@@ -59,13 +60,19 @@ class BaseController(object):
                     np.average([p[1] for p in pos])
                 )
 
-                def key(x):
-                    return np.arctan2(x[1][0] - middle[0], x[1][1] - middle[1])
+                avg_dist = 1.5
+
+                def key(p):
+                    x = p[1][0]
+                    y = p[1][1]
+                    dist = np.sqrt((x - middle[0]) ** 2 + (y - middle[1]) ** 2)
+                    angle = np.arctan2(x - middle[0], y - middle[1])
+                    return (dist > avg_dist * 0.5, angle)
                 # x_from_middle = [p[0] - middle[0] for p in pos]
                 # y_from_middle = [p[1] - middle[1] for p in pos]
                 # angle = tuple(np.arctan2(x_from_middle, y_from_middle))
             agents.sort(key=key)
-            phases = list(self.gen_fixed_permutation(uniform_phases, seed=1))
+            phases = list(self.gen_fixed_permutation(uniform_phases, seed=2))
             agents_with_phases = zip(agents, phases)
             for agent in agents_with_phases:
                 self.system_state.states[agent[0][0]].phase = agent[1]
