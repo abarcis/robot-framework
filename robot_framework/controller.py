@@ -7,6 +7,7 @@ import random
 
 class BaseController(object):
     PHASE_ORDERING = ('RANDOM', 'LEXICOGRAPHIC', 'ANGLE')
+
     def __init__(
         self,
         agents_num,
@@ -32,7 +33,6 @@ class BaseController(object):
     @staticmethod
     def gen_fixed_permutation(l, seed=3):
         s = list(range(len(l)))
-        #s = [0, 1, 2, 4, 6, 3, 5, 7]
         i = 0
         for _ in range(len(l)):
             i += seed
@@ -42,7 +42,7 @@ class BaseController(object):
 
     def reassign_phases(self, phase_ordering='RANDOM'):
         ids = self.system_state.ids
-        uniform_phases = [1. / len(ids) * i #+ random.uniform(-0.01, 0.01)
+        uniform_phases = [1. / len(ids) * i  # + random.uniform(-0.01, 0.01)
                           for i in range(len(ids))]
         if (
             phase_ordering in self.PHASE_ORDERING
@@ -68,9 +68,7 @@ class BaseController(object):
                     dist = np.sqrt((x - middle[0]) ** 2 + (y - middle[1]) ** 2)
                     angle = np.arctan2(x - middle[0], y - middle[1])
                     return (dist > avg_dist * 0.5, angle)
-                # x_from_middle = [p[0] - middle[0] for p in pos]
-                # y_from_middle = [p[1] - middle[1] for p in pos]
-                # angle = tuple(np.arctan2(x_from_middle, y_from_middle))
+
             agents.sort(key=key)
             phases = list(self.gen_fixed_permutation(uniform_phases, seed=2))
             agents_with_phases = zip(agents, phases)

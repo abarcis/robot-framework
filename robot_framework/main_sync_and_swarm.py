@@ -19,10 +19,11 @@ def main():
     ids = [
         DEFAULT_IDENT.format(i) for i in range(agents_num)
     ]
+    time_delta = 0.1
     logic = SyncAndSwarmLogic()
-    position_feedback = PositionFeedback()
     knowledge = SharedKnowledge(ids)
     system_state = SystemState(ids, knowledge)
+    position_feedback = PositionFeedback(system_state.states, time_delta)
     communication = OfflineCommunication(system_state)
     visualization = LiveVisualization()
     controller = OfflineController(
@@ -32,7 +33,8 @@ def main():
         communication,
         system_state,
         visualization,
-        sleep_fcn=time.sleep
+        sleep_fcn=time.sleep,
+        time_delta=time_delta
     )
 
     controller.run()

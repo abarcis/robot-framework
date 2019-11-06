@@ -10,8 +10,8 @@ class BasicPositionLogic:
         self.repulsion_factor = 0.4
         self.agent_radius = 0.1
 
-    def update_position(self, state, states):
-        positions = np.array([s.position for ident, s in states])
+    def update_position(self, state, positions, phases):
+        # positions = np.array([s.position for ident, s in states])
         position = state.position
         N = len(positions)
         pos_diffs = positions - position
@@ -33,7 +33,7 @@ class BasicPhaseLogic:
     def __init__(self, params={}):
         return
 
-    def update_phase(self, state, states):
+    def update_phase(self, state, positions, phases):
         # TODO put some basic logic
         phase = state.phase + 0.01
         if phase > 1:
