@@ -6,7 +6,7 @@ import random
 
 
 class BaseController(object):
-    PHASE_ORDERING = ('RANDOM', 'LEXICOGRAPHIC', 'ANGLE')
+    PHASE_ORDERING = ('RANDOM', 'LEXICOGRAPHIC', 'ANGLE', 'MODIFY')
     def __init__(
         self,
         agents_num,
@@ -41,6 +41,10 @@ class BaseController(object):
             i -= 1
 
     def reassign_phases(self, phase_ordering='RANDOM'):
+        if phase_ordering == 'MODIFY':
+            for ident, state in self.system_state.states.items():
+                state.phase += random.uniform(-0.01, 0.01)
+            return
         ids = self.system_state.ids
         uniform_phases = [1. / len(ids) * i #+ random.uniform(-0.01, 0.01)
                           for i in range(len(ids))]
@@ -195,6 +199,8 @@ class OfflineControllerWithTeleoperation(BaseController):
                     logging.debug("teleop: left")
                     self.teleop_velocity = np.array([-self.teleop_speed, 0, 0])
                     self.was_pressed = self.remember_teleop
+                if pressed_key == 'r':
+                    self.reassign_phases(phase_ordering='RANDOM')
                 if pressed_key in [
                     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
                 ]:
@@ -205,7 +211,9 @@ class OfflineControllerWithTeleoperation(BaseController):
                         if new_params['name'] == 'STATIC PHASE WAVE':
                             self.reassign_phases(phase_ordering='ANGLE')
                         else:
-                            self.reassign_phases(phase_ordering='RANDOM')
+                            self.reassign_phases(phase_ordering='MODIFY')
+                        # else:
+                        #    self.reassign_phases(phase_ordering='RANDOM')
                     except IndexError:
                         print("No parameter set with this index")
                 if pressed_key in self.keyboard_callbacks.keys():
