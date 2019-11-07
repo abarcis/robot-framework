@@ -45,7 +45,10 @@ class BaseController(object):
             for ident, state in self.system_state.states.items():
                 state.phase += random.uniform(-0.01, 0.01)
             return
-        ids = self.system_state.ids
+        ids = [
+            i for i in self.system_state.ids
+            if self.system_state.states[i].position is not None
+        ]
         uniform_phases = [1. / len(ids) * i #+ random.uniform(-0.01, 0.01)
                           for i in range(len(ids))]
         if (
