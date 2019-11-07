@@ -25,7 +25,11 @@ def main():
         ]
         update_interval = 0.5
         agents_num = 30
-        crazyswarm_interface = CrazySwarmInterface()
+        flying_altitude = 3
+
+        crazyswarm_interface = CrazySwarmInterface(
+            flying_altitude=flying_altitude
+        )
         ids = list(crazyswarm_interface.swarm.allcfs.crazyfliesById.keys())
         positions = {
             cf.id: cf.initialPosition
@@ -62,15 +66,16 @@ def main():
             params_list=params,
             keyboard_callbacks={
                 'k': crazyswarm_interface.kill_random_drone,
+                'v': crazyswarm_interface.toggle_waving,
             }
         )
 
         crazyswarm_interface.swarm.run_looped(
             controller.update,
             update_interval=update_interval,
-            takeoff_height=3,
+            takeoff_height=flying_altitude,
             takeoff_time=7,
-            keep_height=True,
+            keep_height=flying_altitude,
             interactive_takeoff=True,
         )
 
