@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+import time
+
 from controller import OfflineController
 from logic import SyncAndSwarmLogic
 from position_feedback import PositionFeedback
@@ -29,7 +31,8 @@ def main():
         position_feedback,
         communication,
         system_state,
-        visualization
+        visualization,
+        sleep_fcn=time.sleep
     )
 
     controller.run()
