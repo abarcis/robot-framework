@@ -2,13 +2,13 @@
 
 import time
 
-from controller import OfflineController
-from logic import SyncAndSwarmLogic
+from controller.offline_controller import OfflineController
+from logic.sync_and_swarm_logic import SyncAndSwarmLogic
 from position_feedback import PositionFeedback
-from knowledge import SharedKnowledge
-from communication import OfflineCommunication
+from knowledge.shared_knowledge import SharedKnowledge
+from communication.offline_communication import OfflineCommunication
 from system_state import SystemState
-from visualization import LiveVisualization
+from visualization.live_visualization import LiveVisualization
 
 
 DEFAULT_IDENT = "a{}"

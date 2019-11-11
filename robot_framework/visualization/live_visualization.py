@@ -1,13 +1,11 @@
 #! /usr/bin/env python
 
+
 from mpl_toolkits.mplot3d import Axes3D  # NOQA
 import matplotlib.pyplot as plt
 import colorsys
 
-
-class BaseVisualization:
-    def update(self, states):
-        raise NotImplementedError()
+from base_visualization import BaseVisualization
 
 
 class LiveVisualization(BaseVisualization):

@@ -1,9 +1,9 @@
 #! /usr/bin/env python
 
-from controller import OfflineControllerWithTeleoperation
-from logic import SyncAndSwarmLogic
-from knowledge import SharedKnowledge
-from communication import OfflineCommunication
+from controller.offline_controller_with_teleoperation import OfflineControllerWithTeleoperation # NOQA
+from logic.sync_and_swarm_logic import SyncAndSwarmLogic
+from knowledge.shared_knowledge import SharedKnowledge
+from communication.offline_communication import OfflineCommunication
 from system_state import SystemState
 from crazyflies import CrazySwarmInterface
 import keyboard

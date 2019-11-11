@@ -1,12 +1,12 @@
 #! /usr/bin/env python
 
-from controller import OfflineController
-from logic import BasicLogic
+from controller.offline_controller import OfflineController
+from logic.basic_logic import BasicLogic
 from position_feedback import PositionFeedback
-from knowledge import SharedKnowledge
-from communication import OfflineCommunication
+from knowledge.shared_knowledge import SharedKnowledge
+from communication.offline_communication import OfflineCommunication
 from system_state import SystemState
-from visualization import LiveVisualization
+from visualization.live_visualization import LiveVisualization
 
 
 DEFAULT_IDENT = "a{}"
