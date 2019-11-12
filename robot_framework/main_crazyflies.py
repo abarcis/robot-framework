@@ -17,7 +17,7 @@ def main():
     logging.getLogger().setLevel(logging.DEBUG)
 
     with keyboard.KeyPoller() as key_poller:
-        params = [
+        params_presets = [
             {'J': 0.1, 'K': 1, 'align_center': True, 'name': "STATIC SYNC"},
             {'J': 0.1, 'K': -1, 'align_center': True, 'name': "STATIC ASYNC"},
             {'J': 1, 'K': 0, 'align_center': True,
@@ -28,6 +28,10 @@ def main():
         update_interval = 0.5
         agents_num = 30
         flying_altitude = 3
+        initial_params = {
+            'natural_frequency': 0.1,
+        }
+        initial_params.update(params_presets[0])
 
         crazyswarm_interface = CrazySwarmInterface(
             flying_altitude=flying_altitude
@@ -44,7 +48,7 @@ def main():
             for i, cf
             in enumerate(crazyswarm_interface.swarm.allcfs.crazyflies)
         }
-        logic = SyncAndSwarmLogic(params[0])
+        logic = SyncAndSwarmLogic(initial_params)
         knowledge = SharedKnowledge(ids)
         system_state = SystemState(
             ids,
@@ -65,10 +69,11 @@ def main():
             teleoperated_id=ids[0],
             key_poller=key_poller,
             teleop_blinking=True,
-            params_list=params,
+            params_list=params_presets,
             keyboard_callbacks={
                 'k': crazyswarm_interface.kill_random_drone,
                 'v': crazyswarm_interface.toggle_waving,
+                'f': logic.phase_logic.toggle_oscillations,
             }
         )
 

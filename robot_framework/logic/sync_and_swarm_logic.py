@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import numpy as np
+import logging
 
 from base_logic import BaseLogic
 
@@ -8,9 +9,20 @@ from base_logic import BaseLogic
 class SyncAndSwarmPhaseLogic:
     def __init__(self, params={}):
         self.K = params['K']
-        self.natural_frequency = 0
+        self.natural_frequency = params['natural_frequency']
+        self.oscillations_on = True
+
+    def toggle_oscillations(self):
+        self.oscillations_on = not self.oscillations_on
+        logging.info(
+            "Switching oscillations to: {}".format(
+                self.oscillations_on
+            )
+        )
 
     def update_params(self, params):
+        if 'natural_frequency' in params.keys():
+            self.natural_frequency = params['natural_frequency']
         if 'K' not in params.keys():
             return
         self.K = params['K']
@@ -22,8 +34,12 @@ class SyncAndSwarmPhaseLogic:
         pos_diffs = positions - position
         phase_diffs = phases - phase
         norm = np.linalg.norm(pos_diffs, axis=1)
-        # TODO add dependency on update interval to natural frequency
-        return (self.natural_frequency + phase + float(self.K) / N * np.sum(
+        # TODO add dependency of time_delta
+        if self.oscillations_on:
+            natural_increase = self.natural_frequency * 2 * np.pi
+        else:
+            natural_increase = 0
+        return (natural_increase + phase + float(self.K) / N * np.sum(
             np.array([
                 np.sin(phase_diffs[j]) / norm[j]
                 for j in range(N)
@@ -38,7 +54,11 @@ class SyncAndSwarmPositionLogic:
         self.scale = 0.7
         self.agent_radius = 0.25
         self.max_speed = 0.1
-        self.rep_coeff = 1.5
+        self.min_distance = 0.9
+        if self.min_distance > 0.75:
+            self.rep_coeff = 1.5
+        else:
+            self.rep_coeff = 1
         self.align_coeff = 0.05
 
     def update_params(self, params):
@@ -54,7 +74,7 @@ class SyncAndSwarmPositionLogic:
         pos_diffs = positions - position
         phase_diffs = phases - phase
         norm = np.linalg.norm(pos_diffs, axis=1)
-        too_close = [n for n in norm if n < 0.9]
+        too_close = [n for n in norm if n < self.min_distance]
         if too_close:
             print("Warning: TOO CLOSE! {}".format(too_close))
         attr = np.array([
@@ -82,6 +102,10 @@ class SyncAndSwarmLogic(BaseLogic):
             params['J'] = 0.1
         if 'K' not in params.keys():
             params['K'] = -1
+        if 'natural_frequency' not in params.keys():
+            params['natural_frequency'] = 0
+        if 'time_delta' not in params.keys():
+            params['time_delta'] = 1
         super(SyncAndSwarmLogic, self).__init__(
             SyncAndSwarmPositionLogic,
             SyncAndSwarmPhaseLogic,
