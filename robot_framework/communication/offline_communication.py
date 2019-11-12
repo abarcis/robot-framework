@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 from base_communication import BaseCommunication
+from state import State
 
 
 class OfflineCommunication(BaseCommunication):
@@ -8,5 +9,5 @@ class OfflineCommunication(BaseCommunication):
         self.system_state.knowledge.update_state(
             own_ident=None,
             other_ident=sender,
-            new_state=state
+            new_state=State(state.phase, state.position)
         )

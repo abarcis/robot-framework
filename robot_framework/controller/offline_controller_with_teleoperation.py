@@ -72,14 +72,16 @@ class OfflineControllerWithTeleoperation(BaseController):
                 ]:
                     try:
                         new_params = self.params_list[int(pressed_key)]
-                        print("Changing parameters to: {}".format(new_params))
+                        logging.info(
+                            "Changing parameters to: {}".format(new_params)
+                        )
                         self.logic.update_params(new_params)
                         if new_params['name'] == 'STATIC PHASE WAVE':
                             self.reassign_phases(phase_ordering='ANGLE')
                         else:
                             self.reassign_phases(phase_ordering='MODIFY')
                     except IndexError:
-                        print("No parameter set with this index")
+                        logging.error("No parameter set with this index")
                 if pressed_key in self.keyboard_callbacks.keys():
                     self.keyboard_callbacks[pressed_key]()
 
@@ -88,7 +90,12 @@ class OfflineControllerWithTeleoperation(BaseController):
                 ident,
                 position_feedback=self.position_feedback,
             )
+            self.communication.send_state(
+                ident,
+                self.system_state.states[ident]
+            )
 
+        for ident in self.system_state.ids:
             if self.system_state.states[ident].position is None:
                 continue
 
@@ -110,11 +117,6 @@ class OfflineControllerWithTeleoperation(BaseController):
                 ident,
                 state_update,
                 self.position_feedback,
-            )
-
-            self.communication.send_state(
-                ident,
-                self.system_state.states[ident]
             )
 
         self.visualization.update(self.system_state.states)
