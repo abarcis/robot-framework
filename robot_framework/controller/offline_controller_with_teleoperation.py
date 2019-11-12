@@ -65,6 +65,8 @@ class OfflineControllerWithTeleoperation(BaseController):
                     logging.debug("teleop: left")
                     self.teleop_velocity = np.array([-self.teleop_speed, 0, 0])
                     self.was_pressed = self.remember_teleop
+                if pressed_key == 'r':
+                    self.reassign_phases(phase_ordering='RANDOM')
                 if pressed_key in [
                     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
                 ]:
@@ -75,7 +77,7 @@ class OfflineControllerWithTeleoperation(BaseController):
                         if new_params['name'] == 'STATIC PHASE WAVE':
                             self.reassign_phases(phase_ordering='ANGLE')
                         else:
-                            self.reassign_phases(phase_ordering='RANDOM')
+                            self.reassign_phases(phase_ordering='MODIFY')
                     except IndexError:
                         print("No parameter set with this index")
                 if pressed_key in self.keyboard_callbacks.keys():

@@ -8,12 +8,15 @@ from system_state import SystemState
 from crazyflies import CrazySwarmInterface
 import keyboard
 import random
+import logging
 
 
 DEFAULT_IDENT = "{}"
 
 
 def main():
+    logging.getLogger().setLevel(logging.DEBUG)
+
     with keyboard.KeyPoller() as key_poller:
         params = [
             {'J': 0.1, 'K': 1, 'align_center': True, 'name': "STATIC SYNC"},

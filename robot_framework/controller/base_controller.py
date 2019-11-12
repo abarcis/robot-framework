@@ -5,7 +5,7 @@ import random
 
 
 class BaseController(object):
-    PHASE_ORDERING = ('RANDOM', 'LEXICOGRAPHIC', 'ANGLE')
+    PHASE_ORDERING = ('RANDOM', 'LEXICOGRAPHIC', 'ANGLE', 'MODIFY')
 
     def __init__(
         self,
@@ -40,7 +40,15 @@ class BaseController(object):
             i -= 1
 
     def reassign_phases(self, phase_ordering='RANDOM'):
-        ids = self.system_state.ids
+        if phase_ordering == 'MODIFY':
+            for ident, state in self.system_state.states.items():
+                state.phase += random.uniform(-0.01, 0.01)
+            return
+
+        ids = [
+            i for i in self.system_state.ids
+            if self.system_state.states[i].position is not None
+        ]
         uniform_phases = [1. / len(ids) * i  # + random.uniform(-0.01, 0.01)
                           for i in range(len(ids))]
         if (
