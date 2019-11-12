@@ -10,7 +10,6 @@ import keyboard
 import random
 import logging
 
-
 DEFAULT_IDENT = "{}"
 
 
