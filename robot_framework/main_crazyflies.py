@@ -16,7 +16,7 @@ DEFAULT_IDENT = "{}"
 def main():
     with keyboard.KeyPoller() as key_poller:
         params_presets = [
-            {'J': 0.1, 'K': 1, 'align_center': True, 'name': "STATIC SYNC"},
+            {'J': 0.1, 'K': 0.4, 'align_center': True, 'name': "STATIC SYNC"},
             {'J': 0.1, 'K': -1, 'align_center': True, 'name': "STATIC ASYNC"},
             {'J': 1, 'K': 0, 'align_center': True,
              'name': "STATIC PHASE WAVE"},
@@ -72,7 +72,8 @@ def main():
                 'k': crazyswarm_interface.kill_random_drone,
                 'v': crazyswarm_interface.toggle_waving,
                 'f': logic.phase_logic.toggle_oscillations,
-            }
+            },
+            is_active=False
         )
 
         crazyswarm_interface.swarm.run_looped(

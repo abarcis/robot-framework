@@ -24,6 +24,8 @@ class OfflineControllerWithTeleoperation(BaseController):
 
         self.key_poller = kwargs.pop('key_poller')
 
+        self.active = kwargs.pop('is_active', True)
+
         super(OfflineControllerWithTeleoperation, self).__init__(
             *args, **kwargs
         )
@@ -33,6 +35,9 @@ class OfflineControllerWithTeleoperation(BaseController):
                 ident,
                 self.system_state.states[ident]
             )
+
+    def toggle_active(self):
+        self.active = not self.active
 
     def update(self, *args):
         if self.teleop_on:
@@ -67,6 +72,8 @@ class OfflineControllerWithTeleoperation(BaseController):
                     self.was_pressed = self.remember_teleop
                 if pressed_key == 'r':
                     self.reassign_phases(phase_ordering='RANDOM')
+                if pressed_key == ' ':
+                    self.toggle_active()
                 if pressed_key in [
                     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
                 ]:
@@ -95,29 +102,30 @@ class OfflineControllerWithTeleoperation(BaseController):
                 self.system_state.states[ident]
             )
 
-        for ident in self.system_state.ids:
-            if self.system_state.states[ident].position is None:
-                continue
+        if self.active:
+            for ident in self.system_state.ids:
+                if self.system_state.states[ident].position is None:
+                    continue
 
-            state_update = self.logic.update_state(
-                self.system_state.states[ident],
-                self.system_state.knowledge.get_states_except_own(ident)
-            )
+                state_update = self.logic.update_state(
+                    self.system_state.states[ident],
+                    self.system_state.knowledge.get_states_except_own(ident)
+                )
 
-            if (
-                self.teleoperated_id == ident and
-                self.teleop_velocity is not None
-            ):
-                state_update.velocity_update *= 0.5
-                state_update.velocity_update += self.teleop_velocity
+                if (
+                    self.teleoperated_id == ident and
+                    self.teleop_velocity is not None
+                ):
+                    state_update.velocity_update *= 0.5
+                    state_update.velocity_update += self.teleop_velocity
 
-                state_update.teleop_update = True
+                    state_update.teleop_update = True
 
-            self.system_state.states[ident].update(
-                ident,
-                state_update,
-                self.position_feedback,
-            )
+                self.system_state.states[ident].update(
+                    ident,
+                    state_update,
+                    self.position_feedback,
+                )
 
         self.visualization.update(self.system_state.states)
 

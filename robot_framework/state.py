@@ -17,7 +17,7 @@ class State:
             self.position[2] = 0
 
         self.velocity = np.zeros(3)
-        self.toggle_teleop = False
+        self.is_teleoperated = False
 
     def update(self, ident, state_update=None, position_feedback=None):
         if state_update:
