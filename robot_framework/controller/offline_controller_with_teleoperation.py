@@ -72,7 +72,7 @@ class OfflineControllerWithTeleoperation(BaseController):
                 ]:
                     try:
                         new_params = self.params_list[int(pressed_key)]
-                        logging.info(
+                        print(
                             "Changing parameters to: {}".format(new_params)
                         )
                         self.logic.update_params(new_params)
