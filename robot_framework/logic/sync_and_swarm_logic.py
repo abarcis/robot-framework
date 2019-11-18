@@ -51,7 +51,7 @@ class SyncAndSwarmPositionLogic:
     def __init__(self, params={}):
         self.J = params['J']
         self.align_center = params.get('align_center', False)
-        self.scale = 0.7
+        self.scale = 0.4
         self.agent_radius = 0.25
         self.max_speed = 0.1
         self.min_distance = 0.9
