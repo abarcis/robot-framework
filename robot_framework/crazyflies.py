@@ -13,7 +13,7 @@ class CrazySwarmInterface:
         self.flying_altitude = flying_altitude
         self.was_on = False
         for cf in self.swarm.allcfs.crazyflies:
-            cf.set_bounding_box(2.2, 3.5, 10)
+            cf.set_bounding_box(2.0, 3.5, 10)
         self.waving = False
 
     def toggle_waving(self):
