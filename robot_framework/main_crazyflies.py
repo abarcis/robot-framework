@@ -25,7 +25,7 @@ def main():
         ]
         update_interval = 0.5
         agents_num = 30
-        flying_altitude = 5
+        flying_altitude = 7
         initial_params = {
             'natural_frequency': 0.1,
         }
