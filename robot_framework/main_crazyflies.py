@@ -25,7 +25,7 @@ def main():
         ]
         update_interval = 0.5
         agents_num = 30
-        flying_altitude = 3
+        flying_altitude = 7
         initial_params = {
             'natural_frequency': 0.1,
         }
@@ -84,7 +84,7 @@ def main():
             controller.update,
             update_interval=update_interval,
             takeoff_height=flying_altitude,
-            takeoff_time=flying_altitude/0.5,
+            takeoff_time=flying_altitude/0.3,
             keep_height=flying_altitude,
             interactive_takeoff=True,
         )

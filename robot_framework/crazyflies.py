@@ -17,7 +17,7 @@ class CrazySwarmInterface:
         self.was_on = False
         self.system_state = system_state
         for cf in self.swarm.allcfs.crazyflies:
-            cf.set_bounding_box(2.2, 3.5, 10)
+            cf.set_bounding_box(2.0, 3.5, 10)
         self.waving = False
 
     def toggle_waving(self):
