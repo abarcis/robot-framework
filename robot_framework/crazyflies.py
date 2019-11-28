@@ -6,12 +6,16 @@ import logging
 import math
 import random
 
+LANDING_VEL_VERT = 0.3  # [m/s]
+LANDING_HEIGHT = 0.00  # [m]
+
 
 class CrazySwarmInterface:
-    def __init__(self, flying_altitude):
-        self.swarm = KPKCrazySwarm()
+    def __init__(self, flying_altitude, system_state=None):
+        self.swarm = KPKCrazySwarm(landing_fcn=self.raindrop_land)
         self.flying_altitude = flying_altitude
         self.was_on = False
+        self.system_state = system_state
         for cf in self.swarm.allcfs.crazyflies:
             cf.set_bounding_box(2.2, 3.5, 10)
         self.waving = False
@@ -39,6 +43,32 @@ class CrazySwarmInterface:
             targetHeight=0.2,
             duration=3
         )
+
+    def raindrop_land(
+        self,
+        landing_velocity=LANDING_VEL_VERT,
+        offset=0.5,
+    ):
+        time_extra = 0.1
+        if self.system_state is not None:
+            alive_crazyflies = [
+                (cf, self.system_state.states[cf.id].phase)
+                for cf in self.swarm.allcfs.crazyflies
+                if not cf.broken
+            ]
+        else:
+            alive_crazyflies = [
+                (cf, None)
+                for cf in self.swarm.allcfs.crazyflies
+                if not cf.broken
+            ]
+        alive_crazyflies = sorted(alive_crazyflies, key=lambda k: (k[1], k[0]))
+        height = alive_crazyflies[0][0].position()[2]
+        duration = (height - LANDING_HEIGHT) / landing_velocity
+        for cf, phase in alive_crazyflies:
+            cf.land(targetHeight=LANDING_HEIGHT, duration=duration)
+            self.swarm.timeHelper.sleep(offset)
+        self.swarm.timeHelper.sleep(duration + time_extra)
 
     def update(self, states):
         for cf in self.swarm.allcfs.crazyflies:

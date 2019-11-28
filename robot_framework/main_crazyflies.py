@@ -25,7 +25,7 @@ def main():
         ]
         update_interval = 0.5
         agents_num = 30
-        flying_altitude = 6
+        flying_altitude = 3
         initial_params = {
             'natural_frequency': 0.1,
         }
@@ -56,6 +56,8 @@ def main():
         )
         communication = OfflineCommunication(system_state)
 
+        crazyswarm_interface.system_state = system_state
+
         controller = OfflineControllerWithTeleoperation(
             agents_num,
             logic,
@@ -71,7 +73,9 @@ def main():
             keyboard_callbacks={
                 'k': crazyswarm_interface.kill_random_drone,
                 'v': crazyswarm_interface.toggle_waving,
-                'f': logic.phase_logic.toggle_oscillations,
+                'o': logic.phase_logic.toggle_oscillations,
+                'l': crazyswarm_interface.swarm.finish,
+                'f': crazyswarm_interface.swarm.finish_in_formation,
             },
             is_active=False
         )
