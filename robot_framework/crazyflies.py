@@ -47,8 +47,9 @@ class CrazySwarmInterface:
     def raindrop_land(
         self,
         landing_velocity=LANDING_VEL_VERT,
-        offset=0.5,
+        offset=1,
     ):
+        logging.info("raindrop landing started")
         time_extra = 0.1
         if self.system_state is not None:
             alive_crazyflies = [
