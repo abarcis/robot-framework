@@ -6,7 +6,7 @@ import logging
 import math
 import random
 
-LANDING_VEL_VERT = 0.3  # [m/s]
+LANDING_VEL_VERT = 0.2  # [m/s]
 LANDING_HEIGHT = 0.00  # [m]
 
 
