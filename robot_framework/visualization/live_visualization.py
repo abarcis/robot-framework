@@ -5,7 +5,7 @@ from mpl_toolkits.mplot3d import Axes3D  # NOQA
 import matplotlib.pyplot as plt
 import colorsys
 
-from base_visualization import BaseVisualization
+from .base_visualization import BaseVisualization
 
 
 class LiveVisualization(BaseVisualization):

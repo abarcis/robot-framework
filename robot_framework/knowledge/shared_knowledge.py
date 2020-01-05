@@ -1,10 +1,11 @@
 #! /usr/bin/env python
 
-from base_knowledge import BaseKnowledge
+from .base_knowledge import BaseKnowledge
 
 
 class SharedKnowledge(BaseKnowledge):
-    def __init__(self, ids):
+    def __init__(self, ids, max_age=None):
+        self.max_age = max_age
         self.knowledge = {ident: None for ident in ids}
 
     def update_state(self, own_ident, other_ident, new_state):
@@ -14,12 +15,12 @@ class SharedKnowledge(BaseKnowledge):
         return self.knowledge[other_ident]
 
     def get_all_states(self, own_ident):
-        return self.knowledge
+        return self.filter_states_by_age(self.knowledge)
 
     def get_states_except_own(self, own_ident):
         states_except_own = (
             (k, v)
-            for k, v in self.knowledge.items()
+            for k, v in self.get_all_states(own_ident).items()
             if k != own_ident
         )
         return states_except_own

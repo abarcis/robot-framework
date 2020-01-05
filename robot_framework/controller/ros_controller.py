@@ -3,11 +3,14 @@
 import logging
 import numpy as np
 
+import rclpy
+
 from .base_controller import BaseController
 
 
-class OfflineControllerWithTeleoperation(BaseController):
+class ROSController(BaseController):
     def __init__(self, *args, **kwargs):
+        self.node = kwargs.pop('node')
         self.teleoperated_id = kwargs.pop('teleoperated_id')
         self.teleop_speed = 0.1
         self.max_speed = 0.2
@@ -26,7 +29,7 @@ class OfflineControllerWithTeleoperation(BaseController):
 
         self.active = kwargs.pop('is_active', True)
 
-        super(OfflineControllerWithTeleoperation, self).__init__(
+        super(ROSController, self).__init__(
             *args, **kwargs
         )
         for ident in self.system_state.ids:
@@ -130,7 +133,13 @@ class OfflineControllerWithTeleoperation(BaseController):
         self.visualization.update(self.system_state.states)
 
     def run(self):
-        while True:
-            self.update()
-            if self.sleep_fcn:
-                self.sleep_fcn(self.time_delta)
+        rclpy.init()
+        self.node.create_timer(
+            timer_period_sec=self.time_delta,
+            callback=self.update
+        )
+
+        rclpy.spin(self.node)
+
+        self.node.destroy_node()
+        rclpy.shutdown()

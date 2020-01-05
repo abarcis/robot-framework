@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 import numpy as np
-from state_update import StateUpdate
+from .state_update import StateUpdate
 
 
 class BaseLogic(object):
@@ -17,9 +17,13 @@ class BaseLogic(object):
         positions_and_phases = [
             (s.position, s.phase)
             for ident, s in states
-            if s.position is not None
+            if s is not None and s.position is not None
         ]
-        positions, phases = zip(*positions_and_phases)
+        if len(positions_and_phases) == 0:
+            positions = []
+            phases = []
+        else:
+            positions, phases = zip(*positions_and_phases)
         positions = np.array(positions)
         phases = np.array(phases) * 2 * np.pi
         state_update = StateUpdate(

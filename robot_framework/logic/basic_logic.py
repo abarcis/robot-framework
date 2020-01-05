@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from base_logic import BaseLogic
+from .base_logic import BaseLogic
 
 
 class BasicPhaseLogic:
