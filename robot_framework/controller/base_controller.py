@@ -56,7 +56,7 @@ class BaseController(object):
             and phase_ordering != 'RANDOM'
         ):
             pos = [tuple(self.system_state.states[i].position) for i in ids]
-            agents = zip(ids, pos)
+            agents = list(zip(ids, pos))
             if phase_ordering == 'LEXICOGRAPHIC':
 
                 def key(x):
@@ -81,19 +81,19 @@ class BaseController(object):
             agents_with_phases = zip(agents, phases)
             for agent in agents_with_phases:
                 self.system_state.states[agent[0][0]].phase = agent[1]
-                self.communication.send_state(
-                    agent[0][0],
-                    self.system_state.states[agent[0][0]]
-                )
+            self.send_states()
         else:
             random.shuffle(uniform_phases)
             for i, ident in enumerate(ids):
                 self.system_state.states[ident].phase = uniform_phases[i]
+            self.send_states()
 
-                self.communication.send_state(
-                    ident,
-                    self.system_state.states[ident]
-                )
+    def send_states(self):
+        for ident in self.system_state.ids:
+            self.communication.send_state(
+                ident,
+                self.system_state.states[ident]
+            )
 
     def run(self):
         raise NotImplementedError()

@@ -100,10 +100,6 @@ class ROSController(BaseController):
                 ident,
                 position_feedback=self.position_feedback,
             )
-            self.communication.send_state(
-                ident,
-                self.system_state.states[ident]
-            )
 
         if self.active:
             for ident in self.system_state.ids:
@@ -131,9 +127,16 @@ class ROSController(BaseController):
                 )
 
         self.visualization.update(self.system_state.states)
+        self.send_states()
+
+    def send_states(self):
+        for ident in self.system_state.ids:
+            self.communication[ident].send_state(
+                ident,
+                self.system_state.states[ident]
+            )
 
     def run(self):
-        rclpy.init()
         self.node.create_timer(
             timer_period_sec=self.time_delta,
             callback=self.update

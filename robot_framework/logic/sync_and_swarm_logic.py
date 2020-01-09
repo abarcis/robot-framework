@@ -57,14 +57,15 @@ class SyncAndSwarmPositionLogic:
     def __init__(self, params={}):
         self.J = params['J']
         self.align_center = params.get('align_center', False)
-        self.scale = 0.4
-        self.agent_radius = 0.25
-        self.max_speed = 0.1
+        self.scale = 0.5
+        self.agent_radius = 0.1
+        self.max_speed = 0.2
         self.min_distance = 0.2
         if self.min_distance > 0.75:
             self.rep_coeff = 1.5
         else:
-            self.rep_coeff = 0.5
+            self.rep_coeff = 1
+        self.attr_coeff = 1
         self.align_coeff = 0.05
 
     def update_params(self, params):
@@ -95,7 +96,7 @@ class SyncAndSwarmPositionLogic:
                 for j in range(N)
             ])
             external_change = self.scale * 1./N * np.sum(
-                attr - self.rep_coeff * rep, axis=0
+                self.attr_coeff * attr - self.rep_coeff * rep, axis=0
             )
         if self.align_center:
             center_alignment = - self.align_coeff * position

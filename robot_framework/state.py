@@ -6,7 +6,9 @@ from datetime import datetime
 
 class State:
     def __init__(self, phase=None, position=None, state=None,
-                 received_timestamp=None, phase_levels_number=1):
+                 received_timestamp=None, sent_timestamp=None,
+                 phase_levels_number=1):
+        self.area_size = 10
         if received_timestamp:
             self.received_timestamp = received_timestamp
         elif state:
@@ -22,7 +24,10 @@ class State:
             self.velocity = state.velocity
             self.is_teleoperated = state.is_teleoperated
         else:
-            self.timestamp = datetime.now()
+            if not sent_timestamp:
+                self.timestamp = datetime.now()
+            else:
+                self.timestamp = sent_timestamp
             self.phase_levels_number = phase_levels_number
             if phase is not None:
                 self.phase = phase
@@ -32,14 +37,14 @@ class State:
                 #     phase - self.phase_level * small_period
                 # ) / small_period
             else:
-                self.phase = 0
-                # self.phase = np.random.random()
+                # self.phase = 0
+                self.phase = np.random.random()
             self.phase_level = 0
 
             if position is not None:
                 self.position = position
             else:
-                self.position = np.random.random(3)
+                self.position = (np.random.random(3) - 0.5) * self.area_size
                 self.position[2] = 0
 
             self.velocity = np.zeros(3)

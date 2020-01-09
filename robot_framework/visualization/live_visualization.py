@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 
-
 from mpl_toolkits.mplot3d import Axes3D  # NOQA
 import matplotlib.pyplot as plt
 import colorsys
@@ -12,10 +11,10 @@ class LiveVisualization(BaseVisualization):
     def __init__(self):
         self.fig = plt.figure()
         self.ax = self.fig.add_subplot(111, projection='3d')
-        self.ax.set_xlim([-2, 2])
-        self.ax.set_ylim([-2, 2])
-        self.ax.set_zlim([0, 3])
-
+        self.ax.set_xlim([-5, 5])
+        self.ax.set_ylim([-5, 5])
+        self.ax.set_zlim([0, 10])
+        self.ax.view_init(azim=0, elev=90)
         self.plot = None
 
     def update(self, states):
