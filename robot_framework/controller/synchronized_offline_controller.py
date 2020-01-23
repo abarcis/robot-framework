@@ -29,7 +29,6 @@ class SynchronizedOfflineController(BaseController):
             self.system_state.states[ident].update(
                 ident,
                 state_update,
-                self.position_feedback,
             )
 
             if self.system_state.states[ident].phase == 0:

@@ -5,7 +5,7 @@ from datetime import datetime
 
 
 class State:
-    def __init__(self, phase=None, position=None, state=None,
+    def __init__(self, phase=None, position=None, velocity=None, state=None,
                  received_timestamp=None, sent_timestamp=None,
                  phase_levels_number=1):
         self.area_size = 10
@@ -37,17 +37,22 @@ class State:
                 #     phase - self.phase_level * small_period
                 # ) / small_period
             else:
-                # self.phase = 0
-                self.phase = np.random.random()
+                self.phase = 0
+                # self.phase = np.random.random()
             self.phase_level = 0
 
             if position is not None:
                 self.position = position
             else:
                 self.position = (np.random.random(3) - 0.5) * self.area_size
+                #self.position[1] = 0
                 self.position[2] = 0
 
-            self.velocity = np.zeros(3)
+            if velocity is not None:
+                self.velocity = velocity
+            else:
+                self.velocity = np.zeros(3)
+
             self.is_teleoperated = False
 
     def update(self, ident, state_update=None, position_feedback=None):
@@ -77,6 +82,7 @@ class State:
         future_state = State(
             self.phase,
             self.position + self.velocity * time_delta,
+            self.velocity
         )
 
         return future_state
