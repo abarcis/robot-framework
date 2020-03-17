@@ -9,5 +9,5 @@ class OfflineCommunication(BaseCommunication):
         self.system_state.knowledge.update_state(
             own_ident=recipient_ident,
             other_ident=sender,
-            new_state=State(state.phase, state.position)
+            new_state=State(state=state)
         )

@@ -9,7 +9,8 @@ class SystemState:
         knowledge,
         states=None,
         positions=None,
-        phases=None
+        phases=None,
+        params={}
     ):
         self.ids = ids
         self.knowledge = knowledge
@@ -24,4 +25,8 @@ class SystemState:
                     position = positions[ident]
                 if phases:
                     phase = phases[ident]
-                self.states[ident] = State(position=position, phase=phase)
+                self.states[ident] = State(
+                    position=position,
+                    phase=phase,
+                    params=params
+                )

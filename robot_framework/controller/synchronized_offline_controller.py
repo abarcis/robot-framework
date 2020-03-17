@@ -31,7 +31,7 @@ class SynchronizedOfflineController(BaseController):
                 state_update,
             )
 
-            if self.system_state.states[ident].phase == 0:
+            if self.system_state.states[ident].small_phase == 0:
                 self.communication.send_state(
                     ident,
                     self.system_state.states[ident].predict(1)
