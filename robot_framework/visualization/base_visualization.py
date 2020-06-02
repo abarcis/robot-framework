@@ -2,5 +2,8 @@
 
 
 class BaseVisualization:
-    def update(self, states):
+    def update(self, states, states_log=None):
         raise NotImplementedError()
+
+    def reinit(self, params=None):
+        pass

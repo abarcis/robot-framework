@@ -57,22 +57,25 @@ class SyncAndSwarmPositionLogic:
     def __init__(self, params={}):
         self.J = params['J']
         self.align_center = params.get('align_center', False)
-        self.scale = 0.5
+        self.scale = 1
         self.agent_radius = 0.1
         self.max_speed = 0.2
         self.min_distance = 0.2
         if self.min_distance > 0.75:
             self.rep_coeff = 1.5
         else:
-            self.rep_coeff = 1
-        self.attr_coeff = 1
+            self.rep_coeff = params.get('repulsion_factor', 2)
+        self.attr_coeff = params.get('attraction_factor', 0.5)
         self.align_coeff = 0.05
 
     def update_params(self, params):
         self.align_center = params.get('align_center', False)
-        if 'J' not in params.keys():
-            return
-        self.J = params['J']
+        if 'J' in params.keys():
+            self.J = params['J']
+        if 'attraction_factor' in params.keys():
+            self.attr_coeff = params['attraction_factor']
+        if 'repulsion_factor' in params.keys():
+            self.rep_coeff = params.get['repulsion_factor']
 
     def update_position(self, state, positions, phases):
         position = state.position
@@ -88,11 +91,15 @@ class SyncAndSwarmPositionLogic:
             # if too_close:
             #    print("Warning: TOO CLOSE! {}".format(too_close))
             attr = np.array([
+                norm[j] *
                 pos_diffs[j]/norm[j] * (1 + self.J * np.cos(phase_diffs[j]))
                 for j in range(N)
             ])
             rep = np.array([
-                pos_diffs[j]/max(norm[j] - self.agent_radius, 0.000001)**2
+                pos_diffs[j]/(
+                    max(norm[j] - self.agent_radius, 0.000001) *
+                    norm[j]
+                )
                 for j in range(N)
             ])
             external_change = self.scale * 1./N * np.sum(
@@ -113,6 +120,7 @@ class SyncAndSwarmPositionLogic:
 
 class SyncAndSwarmLogic(BaseLogic):
     def __init__(self, params={}):
+        self.params = params
         if 'J' not in params.keys():
             params['J'] = 0.1
         if 'K' not in params.keys():

@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 import matplotlib.pyplot as plt
-import mpl_toolkits
+import mpl_toolkits  # NOQA
 from mpl_toolkits.mplot3d import Axes3D  # NOQA
 import colorsys
 
@@ -18,8 +18,9 @@ class LiveVisualization(BaseVisualization):
         self.ax.view_init(azim=0, elev=90)
         self.plot = None
         self.agent_radius = agent_radius
+        self.fig.show()
 
-    def update(self, states):
+    def update(self, states, t=None):
         xs = []
         ys = []
         zs = []
@@ -41,10 +42,12 @@ class LiveVisualization(BaseVisualization):
         if self.plot is None:
             s = None
             if self.agent_radius:
-                ppd = 72./self.ax.figure.dpi
+                ppd = 0.5 * 72./self.ax.figure.dpi
                 trans = self.ax.transData.transform
                 # set size of marker to size of robot
-                s = ((trans((1, self.agent_radius)) - trans((0, 0))) * ppd)[1]
+                s = (
+                    (trans((0, 0.5 * self.agent_radius)) - trans((0, 0))) * ppd
+                )[1]
             self.plot = self.ax.scatter(
                 xs,
                 ys,
@@ -64,4 +67,5 @@ class LiveVisualization(BaseVisualization):
             # self.plot.set_array(np.array(phases))
             # self.plot.set_3d_properties(zs, 'z')
 
-        plt.pause(0.001)
+        self.fig.canvas.flush_events()
+        # plt.pause(0.001)

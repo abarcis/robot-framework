@@ -1,5 +1,17 @@
 #! /usr/bin/env python
 from state import State
+import numpy as np
+
+
+def check_if_position_correct(state, states, params):
+    if not states:
+        return True
+    position = state.position
+    other_positions = np.array([s.position for s in states.values()])
+    distances = np.linalg.norm(other_positions - position, axis=1)
+    return not any(
+        distances < params['agent_radius'] * 2 + params['min_distance'] + 0.1
+    )
 
 
 class SystemState:
@@ -25,8 +37,18 @@ class SystemState:
                     position = positions[ident]
                 if phases:
                     phase = phases[ident]
-                self.states[ident] = State(
+                state = State(
                     position=position,
                     phase=phase,
                     params=params
                 )
+                if position is None:
+                    correct = check_if_position_correct(state, self.states, params)
+                    while not correct:
+                        state = State(
+                            position=position,
+                            phase=phase,
+                            params=params
+                        )
+                        correct = check_if_position_correct(state, self.states, params)
+                self.states[ident] = state

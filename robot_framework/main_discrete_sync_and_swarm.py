@@ -11,54 +11,74 @@ from knowledge.shared_knowledge import SharedKnowledge
 from communication.offline_communication import OfflineCommunication
 from system_state import SystemState
 from visualization.live_visualization import LiveVisualization
+from visualization.order_params_visualization import OrderParamsVisualization
+from logger.state_log import StateLog
 
+from utils.get_properties import estimate_radius
+
+import keyboard
 
 DEFAULT_IDENT = "a{}"
 
 
 def main():
-    agents_num = 12
-    ids = [
-        DEFAULT_IDENT.format(i) for i in range(agents_num)
-    ]
+    with keyboard.KeyPoller() as key_poller:
+        agents_num = 12
+        ids = [
+            DEFAULT_IDENT.format(i) for i in range(agents_num)
+        ]
+        time_delta = 0.1
+        small_phase_steps = 10
 
-    params_presets = [
-        {'J': 0.1, 'K': 1, 'M': 1, 'name': "STATIC SYNC"},
-        {'J': 0.1, 'K': -1, 'M': 1, 'name': "STATIC ASYNC"},
-        {'J': 1, 'K': 0, 'M': 1, 'name': "STATIC PHASE WAVE"},
-        {'J': 1.4, 'K': 0.25, 'M': agents_num, 'name': "NEW STATIC PHASE WAVE"},
-        {'J': 1.5, 'K': 0.5, 'M': 4, 'name': "SPLINTERED PHASE WAVE"},
-        {'J': 1, 'K': -1, 'M': 1, 'name': "ACTIVE PHASE WAVE"},
-        {'J': -1, 'K': 0.5, 'M': 2, 'name': "TEST"},
-    ]
+        params_presets = [
+            {'J': 0.1, 'K': 1, 'M': 1, 'name': "STATIC SYNC"},
+            {'J': -1, 'K': 0.25, 'M': 3, 'name': "STATIC ASYNC"},
+            {'J': 1, 'K': 0, 'M': 1, 'name': "STATIC PHASE WAVE"},
+            {'J': 1.4, 'K': 1, 'M': agents_num, 'name': "NEW STATIC PHASE WAVE"},
+            {'J': 1.5, 'K': 1, 'M': 6, 'name': "SPLINTERED PHASE WAVE"},
+            {'J': 1, 'K': -1, 'M': 1, 'name': "ACTIVE PHASE WAVE"},
+            {'J': 1, 'K': 0.25, 'M': agents_num, 'name': "TEST"},
+        ]
 
-    initial_params = {
-        'phase_levels_number': 24,
-        'agent_radius': 0.1,
-    }
-    initial_params.update(params_presets[4])
+        initial_params = {
+            'phase_levels_number': 18,
+            'agent_radius': 0.1,
+            'min_distance': 0.1,
+            'time_delta': time_delta,
+            'small_phase_steps': small_phase_steps,
+        }
+        initial_params.update(params_presets[3])
+        print(estimate_radius(agents_num, initial_params['J'],
+                              d=initial_params['agent_radius']))
 
-    time_delta = 0.1
-    logic = DiscreteLogic(initial_params)
-    knowledge = SharedKnowledge(ids)
-    system_state = SystemState(ids, knowledge, params=initial_params)
-    position_feedback = PositionFeedback(system_state.states, time_delta)
-    communication = OfflineCommunication(system_state)
-    visualization = LiveVisualization(
-        agent_radius=initial_params['agent_radius']
-    )
-    controller = SynchronizedOfflineController(
-        agents_num,
-        logic,
-        position_feedback,
-        communication,
-        system_state,
-        visualization,
-        # sleep_fcn=time.sleep,
-        time_delta=time_delta
-    )
+        logic = DiscreteLogic(initial_params)
+        knowledge = SharedKnowledge(ids)
+        system_state = SystemState(ids, knowledge, params=initial_params)
+        position_feedback = PositionFeedback(system_state.states, time_delta)
+        communication = OfflineCommunication(system_state)
+        visualizations = [
+            OrderParamsVisualization(params=initial_params),
+            LiveVisualization(
+                agent_radius=initial_params['agent_radius']
+            ),
+        ]
+        logger = StateLog(initial_params)
+        controller = SynchronizedOfflineController(
+            agents_num,
+            logic=logic,
+            position_feedback=position_feedback,
+            communication=communication,
+            system_state=system_state,
+            visualizations=visualizations,
+            logger=logger,
+            # sleep_fcn=time.sleep,
+            key_poller=key_poller,
+            teleop_on=True,
+            params_list=params_presets,
+            time_delta=time_delta
+        )
 
-    controller.run()
+        controller.run()
 
 
 if __name__ == "__main__":

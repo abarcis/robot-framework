@@ -31,15 +31,28 @@ class OfflineController(BaseController):
                 self.position_feedback,
             )
 
+        for ident in self.system_state.ids:
             self.communication.send_state(
                 ident,
                 self.system_state.states[ident]
             )
-
-        self.visualization.update(self.system_state.states)
+        t = self.current_time
+        if abs(t % 1) < 0.001 or 1 - abs(t % 1) < 0.001:
+            for visualization in self.visualizations:
+                visualization.update(
+                    self.system_state.states, self.current_time
+                )
+        self.current_time += self.time_delta
 
     def run(self):
         while True:
             self.update()
+            if self.mission_end_callback:
+                if self.mission_end_callback(
+                    self.current_time,
+                    self.system_state.states,
+                    params=self.logic.params,
+                ):
+                    return
             if self.sleep_fcn:
                 self.sleep_fcn(self.time_delta)

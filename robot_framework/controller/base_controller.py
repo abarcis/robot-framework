@@ -14,10 +14,13 @@ class BaseController(object):
         position_feedback,
         communication,
         system_state,
-        visualization,
+        visualizations,
+        logger,
         params_list=[{}],
         sleep_fcn=None,
+        mission_end_callback=None,
         time_delta=0.1,
+        small_phase_steps=10,
     ):
         self.agents_num = agents_num
         self.logic = logic
@@ -25,9 +28,13 @@ class BaseController(object):
         self.time_delta = time_delta
         self.communication = communication
         self.system_state = system_state
-        self.visualization = visualization
+        self.visualizations = visualizations
+        self.logger = logger
         self.sleep_fcn = sleep_fcn
+        self.mission_end_callback = mission_end_callback
         self.params_list = params_list
+        self.small_phase_steps = small_phase_steps
+        self.current_time = 0
 
     @staticmethod
     def gen_fixed_permutation(l, seed=3):

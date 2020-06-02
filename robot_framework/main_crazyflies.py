@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 
-from controller.offline_controller_with_teleoperation import OfflineControllerWithTeleoperation # NOQA
+from controller.offline_controller_with_teleoperation import (
+    OfflineControllerWithTeleoperation
+)
 from logic.sync_and_swarm_logic import SyncAndSwarmLogic
 from knowledge.shared_knowledge import SharedKnowledge
 from communication.offline_communication import OfflineCommunication
