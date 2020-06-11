@@ -32,8 +32,9 @@ def main():
 
         params_presets = [
             {'J': 0.1, 'K': 1, 'M': 1, 'name': "STATIC SYNC"},
-            {'J': -1, 'K': 0.25, 'M': 3, 'name': "STATIC ASYNC"},
-            {'J': 1, 'K': 0, 'M': 1, 'name': "STATIC PHASE WAVE"},
+            {'J': -1.5, 'K': 0.25, 'M': 6, 'name': "STATIC ASYNC"},
+            {'J': -1.5, 'K': 0.1, 'M': 4, 'name': "STATIC ASYNC"},
+            {'J': -1.5, 'K': 0.1, 'M': 3, 'name': "STATIC ASYNC"},
             {'J': 1.4, 'K': 1, 'M': agents_num, 'name': "NEW STATIC PHASE WAVE"},
             {'J': 1.5, 'K': 1, 'M': 6, 'name': "SPLINTERED PHASE WAVE"},
             {'J': 1, 'K': -1, 'M': 1, 'name': "ACTIVE PHASE WAVE"},
@@ -41,13 +42,15 @@ def main():
         ]
 
         initial_params = {
-            'phase_levels_number': 18,
+            'phase_levels_number': 24,
             'agent_radius': 0.1,
             'min_distance': 0.1,
             'time_delta': time_delta,
             'small_phase_steps': small_phase_steps,
+            'orientation_mode': True,
+            'constraint_mode': True,
         }
-        initial_params.update(params_presets[3])
+        initial_params.update(params_presets[0])
         print(estimate_radius(agents_num, initial_params['J'],
                               d=initial_params['agent_radius']))
 
