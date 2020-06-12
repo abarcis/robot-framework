@@ -24,7 +24,7 @@ class DiscretePhaseLogic:
         K = self.K
         M = self.M
         min_distance = 0.3
-        distance_coefficient = min(1/min_distance, 1/distance)
+        distance_coefficient = min(1/min_distance, 1/distance)  # * (-0.3)
 
         Kms = [K] * M
         # Kms = [self.phase_levels_number / 2 / np.pi * K] * M
@@ -127,6 +127,7 @@ class DiscretePhaseLogic:
 class DiscretePositionLogic:
     def __init__(self, params={}):
         self.max_speed = 0.2
+        self.max_angular_speed = 1
         self.agent_radius = params.get('agent_radius', 0.1)
         self.min_distance = 0.1
         self.min_speed = 0.01
@@ -237,6 +238,18 @@ class DiscretePositionLogic:
 
         return vel
 
+    def update_orientation(self, state, velocity):
+        # TODO add max ang_vel
+        vel_angle = np.arctan2(velocity[1], velocity[0])
+        vel_angle_diff = np.sin(
+            (vel_angle - state.angle_xy)
+        )
+        ang_speed = vel_angle_diff / self.time_step
+        return max(
+            -self.max_angular_speed,
+            min(self.max_angular_speed, ang_speed)
+        )
+
 
 class DiscreteLogic(BaseLogic):
     def __init__(self, params={}):
@@ -244,6 +257,7 @@ class DiscreteLogic(BaseLogic):
             DiscretePositionLogic, DiscretePhaseLogic, params
         )
         self.velocity_updates = {}
+        self.angular_speed_updates = {}
         self.phase_level_deltas = {}
         self.phase_levels_number = params.get('phase_levels_number', 1)
         self.small_phase_steps = params.get('small_phase_steps', 10)
@@ -257,6 +271,7 @@ class DiscreteLogic(BaseLogic):
 
     def update_state(self, state, states, ident=None):
         velocity_update = None
+        angular_speed_update = None
         phase_updates = self.phase_logic.update_phase(
             state,
         )
@@ -281,6 +296,18 @@ class DiscreteLogic(BaseLogic):
             self.velocity_updates[ident] = self.position_logic.update_position(
                 state, positions, phases
             )
+            if state.constraint_mode:
+                vel = self.velocity_updates[ident]
+                self.angular_speed_updates[ident] = (
+                    self.position_logic.update_orientation(
+                        state, vel
+                    )
+                )
+                vel_angle = np.arctan2(vel[1], vel[0])
+                angle_diff = state.angle_xy - vel_angle
+                v_value = np.linalg.norm(vel) * np.cos(angle_diff)
+                self.velocity_updates[ident] = np.array([v_value, 0, 0])
+
             phase_correction_update = self.phase_logic.update_discrete_phase(
                 state, positions, phases
             )
@@ -293,6 +320,7 @@ class DiscreteLogic(BaseLogic):
 
         if state.small_phase == 0:
             velocity_update = self.velocity_updates.pop(ident, None)
+            angular_speed_update = self.angular_speed_updates.pop(ident, None)
             phase_updates["phase_level"] = (
                 phase_updates["phase_level"] +
                 self.phase_level_deltas.pop(ident, 0)
@@ -300,6 +328,7 @@ class DiscreteLogic(BaseLogic):
 
         state_update = StateUpdate(
             velocity_update=velocity_update,
+            angular_speed_update=angular_speed_update,
             phase_level_update=phase_updates["phase_level"],
             small_phase_update=phase_updates["small_phase"],
             phase_correction_update=phase_updates.pop("phase_correction", None)

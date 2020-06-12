@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import mpl_toolkits  # NOQA
 from mpl_toolkits.mplot3d import Axes3D  # NOQA
 import colorsys
+import pyquaternion
+from datetime import datetime
 
 from .base_visualization import BaseVisualization
 
@@ -17,6 +19,7 @@ class LiveVisualization(BaseVisualization):
         self.ax.set_zlim([0, 10])
         self.ax.view_init(azim=0, elev=90)
         self.plot = None
+        self.orientation_plot = None
         self.agent_radius = agent_radius
         self.fig.show()
 
@@ -29,6 +32,7 @@ class LiveVisualization(BaseVisualization):
         phases = []
         vmin = 0
         vmax = 1
+        orientations = []
 
         for state in states.values():
             x, y, z = state.position
@@ -38,6 +42,22 @@ class LiveVisualization(BaseVisualization):
             positions.append(state.position)
             phases.append(state.phase)
             colors.append(colorsys.hsv_to_rgb(state.phase, 1, 1))
+            if state.orientation_mode:
+                vec = state.orientation.rotate([0.3, 0, 0])
+                begin = state.position
+                end = begin + vec
+                orientation_line = [
+                    [begin[0], end[0]],
+                    [begin[1], end[1]],
+                    'k',
+                ]
+                orientations.append(orientation_line)
+
+        if self.orientation_plot is not None:
+            for l in self.orientation_plot:
+                l.remove()
+
+        self.orientation_plot = self.ax.plot(*sum(orientations, []))
 
         if self.plot is None:
             s = None
@@ -66,6 +86,5 @@ class LiveVisualization(BaseVisualization):
             self.plot._edgecolor3d = self.plot.get_edgecolor()
             # self.plot.set_array(np.array(phases))
             # self.plot.set_3d_properties(zs, 'z')
-
         self.fig.canvas.flush_events()
         # plt.pause(0.001)
