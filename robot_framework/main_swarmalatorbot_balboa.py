@@ -4,8 +4,8 @@ import time
 
 from rclpy.node import Node
 
-from controller.bs_controller import (
-    BSController
+from controller.ros_controller import (
+    ROSController
 )
 from logic.discrete_sync_and_swarm_logic import DiscreteLogic
 from position_feedback import PositionFeedback
@@ -66,7 +66,7 @@ def main():
     visualizations = [
     ]
     logger = StateLog(initial_params)
-    controller = BSController(
+    controller = ROSController(
         0,
         logic=logic,
         position_feedback=position_feedback,
