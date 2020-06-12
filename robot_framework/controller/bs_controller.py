@@ -44,6 +44,7 @@ class BSController(BaseController):
     def run(self):
         try:
             executor = SingleThreadedExecutor()
+            executor.add_node(self.node)
             executor.spin()
 
         finally:

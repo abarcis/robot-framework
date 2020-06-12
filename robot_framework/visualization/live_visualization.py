@@ -59,7 +59,7 @@ class LiveVisualization(BaseVisualization):
 
         self.orientation_plot = self.ax.plot(*sum(orientations, []))
 
-        if self.plot is None:
+        if self.plot is None and len(x) > 0:
             s = None
             if self.agent_radius:
                 ppd = 0.5 * 72./self.ax.figure.dpi
