@@ -27,7 +27,7 @@ DEFAULT_IDENT = "a{}"
 def main():
     rclpy.init()
     ids = [
-        socket.gethostname(),
+        socket.gethostname()[-2:],
     ]
     time_delta = 0.1
     small_phase_steps = 10

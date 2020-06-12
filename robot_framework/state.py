@@ -11,8 +11,6 @@ class State:
                  received_timestamp=None, sent_timestamp=None,
                  params={}, initialize=True):
         self.area_size = 10
-        self.orientation_mode = params.get('orientation_mode', False)
-        self.constraint_mode = params.get('constraint_mode', False)
         if received_timestamp:
             self.received_timestamp = received_timestamp
         elif state:
@@ -34,6 +32,8 @@ class State:
             self.orientation_mode = state.orientation_mode
             self.constraint_mode = state.constraint_mode
         else:
+            self.orientation_mode = params.get('orientation_mode', False)
+            self.constraint_mode = params.get('constraint_mode', False)
             if not sent_timestamp:
                 self.timestamp = datetime.now()
             else:
@@ -59,7 +59,7 @@ class State:
             if (
                 orientation is None and
                 initialize and
-                params['orientation_mode']
+                self.orientation_mode
             ):
                 orient = Quaternion(
                     axis=[0, 0, 1],

@@ -288,35 +288,36 @@ class DiscreteLogic(BaseLogic):
                    - np.floor(0.5 * self.small_phase_steps)
                ) * self.time_delta
             )
+            if len(positions_and_phases) > 0:
             # print('pos predict', state.position)
-            positions, phases = zip(*positions_and_phases)
-            # print("ID", ident, state.phase_level, phases)
-            positions = np.array(positions)
-            phases = np.array(phases)
-            self.velocity_updates[ident] = self.position_logic.update_position(
-                state, positions, phases
-            )
-            if state.constraint_mode:
-                vel = self.velocity_updates[ident]
-                self.angular_speed_updates[ident] = (
-                    self.position_logic.update_orientation(
-                        state, vel
-                    )
+                positions, phases = zip(*positions_and_phases)
+                # print("ID", ident, state.phase_level, phases)
+                positions = np.array(positions)
+                phases = np.array(phases)
+                self.velocity_updates[ident] = self.position_logic.update_position(
+                    state, positions, phases
                 )
-                vel_angle = np.arctan2(vel[1], vel[0])
-                angle_diff = state.angle_xy - vel_angle
-                v_value = np.linalg.norm(vel) * np.cos(angle_diff)
-                self.velocity_updates[ident] = np.array([v_value, 0, 0])
+                if state.constraint_mode:
+                    vel = self.velocity_updates[ident]
+                    self.angular_speed_updates[ident] = (
+                        self.position_logic.update_orientation(
+                            state, vel
+                        )
+                    )
+                    vel_angle = np.arctan2(vel[1], vel[0])
+                    angle_diff = state.angle_xy - vel_angle
+                    v_value = np.linalg.norm(vel) * np.cos(angle_diff)
+                    self.velocity_updates[ident] = np.array([v_value, 0, 0])
 
-            phase_correction_update = self.phase_logic.update_discrete_phase(
-                state, positions, phases
-            )
-            self.phase_level_deltas[ident] = (
-                phase_correction_update["level_delta"]
-            )
-            phase_updates["phase_correction"] = (
-                phase_correction_update["phase_correction"]
-            )
+                phase_correction_update = self.phase_logic.update_discrete_phase(
+                    state, positions, phases
+                )
+                self.phase_level_deltas[ident] = (
+                    phase_correction_update["level_delta"]
+                )
+                phase_updates["phase_correction"] = (
+                    phase_correction_update["phase_correction"]
+                )
 
         if state.small_phase == 0:
             velocity_update = self.velocity_updates.pop(ident, None)

@@ -4,8 +4,8 @@ import rclpy
 from rclpy.executors import SingleThreadedExecutor
 
 from .base_controller import BaseController
-from .rf_mission_executor import RFMissionExecutor
-from mission_executor import MissionClient
+from robot_framework.rf_mission_executor import RFMissionExecutor
+from mission_manager.client import MissionClient
 
 
 class ROSController(BaseController):
@@ -52,7 +52,10 @@ class ROSController(BaseController):
             )
 
         if self.system_state.states[ident].small_phase == 0:
-            self.send_state(ident)
+            self.communication.send_state(
+                ident,
+                self.system_state.states[ident]
+            )
 
             for visualization in self.visualizations:
                 visualization.update(
@@ -61,15 +64,9 @@ class ROSController(BaseController):
 
         self.current_time += self.time_delta
 
-    def send_state(self, ident):
-        self.communication[ident].send_state(
-            ident,
-            self.system_state.states[ident]
-        )
-
     def run(self):
         try:
-            rf_executor = RFMissionExecutor('mission_executor')
+            rf_executor = RFMissionExecutor(self)
             mission_client = MissionClient()
             mission_client.add_mission_executor(rf_executor)
             executor = SingleThreadedExecutor()

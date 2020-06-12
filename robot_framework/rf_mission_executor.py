@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 from rclpy.node import Node
-from mission_executor import MissionExecutor
+from mission_manager.client import MissionExecutor
 
 
 class RFMissionExecutor(Node, MissionExecutor):
