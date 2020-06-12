@@ -7,7 +7,7 @@ from datetime import datetime
 class State:
     def __init__(self, phase=None, position=None, velocity=None, state=None,
                  received_timestamp=None, sent_timestamp=None,
-                 params={}):
+                 params={}, initialize=True):
         self.area_size = 10
         if received_timestamp:
             self.received_timestamp = received_timestamp
@@ -44,10 +44,12 @@ class State:
             # ) / small_period
             self.phase_correction = 0
 
-            if position is None:
+            if position is None and initialize:
                 self.position = (np.random.random(3) - 0.5) * self.area_size
                 # self.position[1] = 0
                 self.position[2] = 0
+            else:
+                self.position = None
 
             if velocity is not None:
                 self.velocity = velocity

@@ -16,11 +16,12 @@ class ROSCommunication(BaseCommunication):
     def __init__(self, *args, **kwargs):
         self.ident = kwargs.pop('agent_id')
         self.node = kwargs.pop('node')
-        self.state_publisher = self.node.create_publisher(
-            StateMsg,
-            'state',
-            100
-        )
+        if self.ident != 'base_station':
+            self.state_publisher = self.node.create_publisher(
+                StateMsg,
+                'state',
+                100
+            )
         self.state_subscription = self.node.create_subscription(
             StateMsg,
             'state',
