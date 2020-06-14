@@ -4,7 +4,7 @@ import numpy as np
 
 from .base_logic import BaseLogic
 from .state_update import StateUpdate
-from utils.order_parameters import potential_M_N
+from robot_framework.utils.order_parameters import potential_M_N
 
 
 class DiscretePhaseLogic:

@@ -43,6 +43,7 @@ setup(
         'console_scripts': [
             'visualization = robot_framework.visualization:main',
             'mock_optitrack = robot_framework.mock_optitrack:main',
+            'balboa = robot_framework.main_swarmalatorbot_balboa:main',
         ],
     },
 )

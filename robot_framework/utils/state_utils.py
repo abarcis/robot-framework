@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 
-from state import State
+from robot_framework.state import State
 
 
 def copy_all_states(system_state):

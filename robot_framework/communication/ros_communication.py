@@ -8,7 +8,7 @@ from geometry_msgs.msg import Pose, Point
 from builtin_interfaces.msg import Time
 
 from .base_communication import BaseCommunication
-from state import State
+from robot_framework.state import State
 from sync_and_swarm_msgs.msg import State as StateMsg
 
 
