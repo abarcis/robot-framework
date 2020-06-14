@@ -62,6 +62,7 @@ def main():
         system_state,
         node=node,
         agent_id=ids[0],
+        params=initial_params,
     )
     visualizations = [
     ]

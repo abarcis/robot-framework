@@ -238,13 +238,20 @@ class DiscretePositionLogic:
 
         return vel
 
-    def update_orientation(self, state, velocity):
-        # TODO add max ang_vel
+    def update_orientation(self, state, velocity, phases):
+        phase = state.phase_level/state.phase_levels_number
+        phase_potential = potential_M_N(
+            self.params['K'],
+            self.params['M'],
+            states=None,
+            phases=[p/state.phase_levels_number for p in phases] + [phase],
+        )
         vel_angle = np.arctan2(velocity[1], velocity[0])
         vel_angle_diff = np.sin(
             (vel_angle - state.angle_xy)
         )
-        ang_speed = vel_angle_diff / self.time_step
+        ang_speed = vel_angle_diff / self.time_step * (1 - phase_potential**(1/10))
+
         return max(
             -self.max_angular_speed,
             min(self.max_angular_speed, ang_speed)
@@ -301,7 +308,7 @@ class DiscreteLogic(BaseLogic):
                     vel = self.velocity_updates[ident]
                     self.angular_speed_updates[ident] = (
                         self.position_logic.update_orientation(
-                            state, vel
+                            state, vel, phases
                         )
                     )
                     vel_angle = np.arctan2(vel[1], vel[0])
