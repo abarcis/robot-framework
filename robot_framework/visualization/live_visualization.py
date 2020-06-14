@@ -11,17 +11,21 @@ from .base_visualization import BaseVisualization
 
 
 class LiveVisualization(BaseVisualization):
-    def __init__(self, agent_radius=None):
+    def __init__(self, agent_radius=None, params={}):
+        self.params = params
         self.fig = plt.figure()
+        self.plot = None
+        self.init_axes()
+        self.orientation_plot = None
+        self.agent_radius = agent_radius
+        self.fig.show()
+
+    def init_axes(self):
         self.ax = self.fig.add_subplot(111, projection='3d')
         self.ax.set_xlim([-5, 5])
         self.ax.set_ylim([-5, 5])
         self.ax.set_zlim([0, 10])
         self.ax.view_init(azim=0, elev=90)
-        self.plot = None
-        self.orientation_plot = None
-        self.agent_radius = agent_radius
-        self.fig.show()
 
     def update(self, states, t=None):
         xs = []
@@ -53,38 +57,46 @@ class LiveVisualization(BaseVisualization):
                 ]
                 orientations.append(orientation_line)
 
-        if self.orientation_plot is not None:
-            for l in self.orientation_plot:
-                l.remove()
+        # plt.cla()
+        # self.init_axes()
 
-        self.orientation_plot = self.ax.plot(*sum(orientations, []))
+        if len(orientations) > 0 and self.params.get('orientation_mode', False):
+            if self.orientation_plot is not None:
+                for l in self.orientation_plot:
+                    l.remove()
 
-        if self.plot is None and len(x) > 0:
-            s = None
-            if self.agent_radius:
-                ppd = 0.5 * 72./self.ax.figure.dpi
-                trans = self.ax.transData.transform
-                # set size of marker to size of robot
-                s = (
-                    (trans((0, 0.5 * self.agent_radius)) - trans((0, 0))) * ppd
-                )[1]
-            self.plot = self.ax.scatter(
-                xs,
-                ys,
-                zs,
-                c=colors,
-                vmin=vmin,
-                vmax=vmax,
-                s=s
-            )
-        else:
-            # import numpy as np
-            self.plot._offsets3d = (xs, ys, zs)
-            self.plot.set_facecolors(colors)
-            self.plot.set_edgecolors(colors)
-            self.plot._facecolor3d = self.plot.get_facecolor()
-            self.plot._edgecolor3d = self.plot.get_edgecolor()
-            # self.plot.set_array(np.array(phases))
-            # self.plot.set_3d_properties(zs, 'z')
-        self.fig.canvas.flush_events()
-        # plt.pause(0.001)
+            self.orientation_plot = self.ax.plot(*sum(orientations, []))
+
+        if len(xs) >= self.params.get('agents_num', 0):
+            if self.plot is None:
+                print('new plot')
+                s = None
+                if self.agent_radius:
+                    ppd = 0.5 * 72./self.ax.figure.dpi
+                    trans = self.ax.transData.transform
+                    # set size of marker to size of robot
+                    s = (
+                        (trans((0, 0.5 * self.agent_radius)) - trans((0, 0))) * ppd
+                    )[1]
+                self.plot = self.ax.scatter(
+                    xs,
+                    ys,
+                    zs,
+                    c=colors,
+                    vmin=vmin,
+                    vmax=vmax,
+                    s=s
+                )
+                # plt.pause(0.001)
+            else:
+                print('updating plot')
+                # import numpy as np
+                self.plot._offsets3d = (xs, ys, zs)
+                self.plot.set_facecolors(colors)
+                self.plot.set_edgecolors(colors)
+                self.plot._facecolor3d = self.plot.get_facecolor()
+                self.plot._edgecolor3d = self.plot.get_edgecolor()
+                # self.plot.set_array(np.array(phases))
+                # self.plot.set_3d_properties(zs, 'z')
+            # self.fig.canvas.flush_events()
+            plt.pause(0.001)

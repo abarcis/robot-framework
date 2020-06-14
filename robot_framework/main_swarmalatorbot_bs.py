@@ -27,7 +27,7 @@ def main():
     ids = [
         'base_station',
     ]
-    time_delta = 0.1
+    time_delta = 1
     small_phase_steps = 10
 
     params_presets = [
@@ -48,6 +48,7 @@ def main():
         'small_phase_steps': small_phase_steps,
         'orientation_mode': True,
         'constraint_mode': True,
+        'agents_num': 8,
     }
     initial_params.update(params_presets[0])
 
@@ -59,11 +60,13 @@ def main():
     communication = ROSCommunication(
         system_state,
         node=node,
-        agent_id=ids[0]
+        agent_id=ids[0],
+        params=initial_params,
     )
     visualizations = [
         LiveVisualization(
-            agent_radius=initial_params['agent_radius']
+            agent_radius=initial_params['agent_radius'],
+            params=initial_params,
         ),
     ]
     logger = StateLog(initial_params)
