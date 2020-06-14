@@ -8,7 +8,7 @@ from controller.ros_controller import (
     ROSController
 )
 from logic.discrete_sync_and_swarm_logic import DiscreteLogic
-from position_feedback import PositionFeedback
+from position_feedback.optitrack import Optitrack
 from knowledge.separate_knowledge import SeparateKnowledge
 from communication.ros_communication import ROSCommunication
 from system_state import SystemState
@@ -56,7 +56,7 @@ def main():
     logic = DiscreteLogic(initial_params)
     knowledge = SeparateKnowledge(ids)
     system_state = SystemState(ids, knowledge, params=initial_params)
-    position_feedback = PositionFeedback(system_state.states, time_delta)
+    position_feedback = Optitrack(system_state.states, time_delta)
     node = Node('controller')
     communication = ROSCommunication(
         system_state,

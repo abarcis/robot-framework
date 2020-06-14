@@ -51,16 +51,16 @@ class ROSController(BaseController):
                 self.position_feedback,
             )
 
-        if self.system_state.states[ident].small_phase == 0:
-            self.communication.send_state(
-                ident,
-                self.system_state.states[ident]
-            )
-
-            for visualization in self.visualizations:
-                visualization.update(
-                    self.system_state.states, self.current_time
+            if self.system_state.states[ident].small_phase == 0:
+                self.communication.send_state(
+                    ident,
+                    self.system_state.states[ident]
                 )
+
+                for visualization in self.visualizations:
+                    visualization.update(
+                        self.system_state.states, self.current_time
+                    )
 
         self.current_time += self.time_delta
 
