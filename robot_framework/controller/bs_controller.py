@@ -27,12 +27,14 @@ class BSController(BaseController):
         self.logic.update_params(params)
 
     def update(self, *args):
-        for visualization in self.visualizations:
-            visualization.update(
-                self.system_state.knowledge.get_states_except_own(
-                    self.system_state.ids[0]
-                ), self.current_time
+        states = [
+            s[1] for s in
+            self.system_state.knowledge.get_states_except_own(
+                self.system_state.ids[0]
             )
+        ]
+        for visualization in self.visualizations:
+            visualization.update(states, self.current_time)
         self.current_time += self.time_delta
 
     def send_state(self, ident):
@@ -45,6 +47,7 @@ class BSController(BaseController):
         try:
             executor = SingleThreadedExecutor()
             executor.add_node(self.node)
+            self.start()
             executor.spin()
 
         finally:

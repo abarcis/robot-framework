@@ -3,8 +3,10 @@
 from datetime import datetime
 import numpy as np
 
+from pyquaternion import Quaternion as QuaternionType
+
 from std_msgs.msg import Header
-from geometry_msgs.msg import Pose, Point
+from geometry_msgs.msg import Pose, Point, Quaternion
 from builtin_interfaces.msg import Time
 
 from .base_communication import BaseCommunication
@@ -16,6 +18,7 @@ class ROSCommunication(BaseCommunication):
     def __init__(self, *args, **kwargs):
         self.ident = kwargs.pop('agent_id')
         self.node = kwargs.pop('node')
+        self.params = kwargs.pop('params')
         if self.ident != 'base_station':
             self.state_publisher = self.node.create_publisher(
                 StateMsg,
@@ -34,13 +37,18 @@ class ROSCommunication(BaseCommunication):
 
     def create_state_from_msg(self, msg):
         pos = msg.pose.position
-        # orient = msg.pose.orientation
+        orient = msg.pose.orientation
+        if self.params['orientation_mode']:
+            orientation = QuaternionType(
+                [orient.w, orient.x, orient.y, orient.z]
+            )
+        else:
+            orientation = None
         position = np.array([pos.x, pos.y, pos.z])
         phase = msg.phase
-        # orientation = QuaternionType(
-        # [orient.w, orient.x, orient.y, orient.z])
         return State(
-            position=position, phase=phase,
+            position=position, phase=phase, orientation=orientation,
+            params=self.params,
             sent_timestamp=datetime.fromtimestamp(msg.header.stamp.sec)
         )
 
@@ -54,6 +62,16 @@ class ROSCommunication(BaseCommunication):
             frame_id="",
             stamp=Time(sec=sec, nanosec=nanosec)
         )
+        if state.orientation_mode:
+            orientation = Quaternion(
+                x=state.orientation.elements[1],
+                y=state.orientation.elements[2],
+                z=state.orientation.elements[3],
+                w=state.orientation.elements[0]
+            )
+        else:
+            orientation = None
+
         sender_ident = int(sender)
         phase = float(state.phase)
         msg = StateMsg(
@@ -66,12 +84,7 @@ class ROSCommunication(BaseCommunication):
                     y=state.position[1],
                     z=state.position[2]
                 ),
-                # orientation=Quaternion(
-                #     x=state.orientation.elements[1],
-                #     y=state.orientation.elements[2],
-                #     z=state.orientation.elements[3],
-                #     w=state.orientation.elements[0]
-                # )
+                orientation=orientation,
             )
         )
         return msg
@@ -96,5 +109,5 @@ class ROSCommunication(BaseCommunication):
         self.system_state.knowledge.update_state(
             own_ident=own_ident,
             other_ident=sender_ident,
-            new_state=State(state=state, received_timestamp=datetime.now())
+            new_state=State(state=state, received_timestamp=datetime.now()),
         )
