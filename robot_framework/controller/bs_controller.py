@@ -27,12 +27,9 @@ class BSController(BaseController):
         self.logic.update_params(params)
 
     def update(self, *args):
-        states = [
-            s[1] for s in
-            self.system_state.knowledge.get_states_except_own(
-                self.system_state.ids[0]
-            )
-        ]
+        states = dict(self.system_state.knowledge.get_states_except_own(
+            self.system_state.ids[0]
+        ))
         for visualization in self.visualizations:
             visualization.update(states, self.current_time)
         self.current_time += self.time_delta

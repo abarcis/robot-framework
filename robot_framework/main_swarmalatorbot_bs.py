@@ -27,7 +27,7 @@ def main():
     ids = [
         'base_station',
     ]
-    time_delta = 0.1
+    time_delta = 1
     small_phase_steps = 10
 
     params_presets = [

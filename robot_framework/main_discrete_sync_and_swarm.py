@@ -62,7 +62,8 @@ def main():
         visualizations = [
             OrderParamsVisualization(params=initial_params),
             LiveVisualization(
-                agent_radius=initial_params['agent_radius']
+                agent_radius=initial_params['agent_radius'],
+                params=initial_params,
             ),
         ]
         logger = StateLog(initial_params)
