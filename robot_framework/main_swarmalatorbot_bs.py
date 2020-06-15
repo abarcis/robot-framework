@@ -15,8 +15,6 @@ from system_state import SystemState
 from visualization.live_visualization import LiveVisualization
 from logger.state_log import StateLog
 
-from utils.get_properties import estimate_radius
-
 import rclpy
 
 DEFAULT_IDENT = "a{}"
