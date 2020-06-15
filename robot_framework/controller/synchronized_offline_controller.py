@@ -8,6 +8,7 @@ class SynchronizedOfflineController(BaseController, Teleoperation):
     def __init__(self, *args, **kwargs):
         self.teleop_on = kwargs.pop('teleop_on', False)
         self.key_poller = kwargs.pop('key_poller')
+        self.real_time_vis = kwargs.pop('real_time_vis', True)
         self.was_pressed = 0
         self.teleop_velocity = None
         self.keyboard_callbacks = kwargs.pop('keyboard_callbacks', {})
@@ -50,7 +51,13 @@ class SynchronizedOfflineController(BaseController, Teleoperation):
 
         self.logger.update(self.current_time, self.system_state)
         t = self.current_time
-        if abs(t % 1) < 0.001 or 1 - abs(t % 1) < 0.001:
+        if self.real_time_vis:
+            if self.system_state.states.values()[0].small_phase == 0:
+                for visualization in self.visualizations:
+                    visualization.update(
+                        self.system_state.states, self.current_time
+                    )
+        elif abs(t % 1) < 0.001 or 1 - abs(t % 1) < 0.001:
             for visualization in self.visualizations:
                 visualization.update(
                     self.system_state.states, self.current_time
