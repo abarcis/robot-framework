@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-from state import State
+from robot_framework.state import State
 import numpy as np
 
 

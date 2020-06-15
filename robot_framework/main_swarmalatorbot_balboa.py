@@ -4,18 +4,18 @@ import time
 
 from rclpy.node import Node
 
-from controller.ros_controller import (
+from .controller.ros_controller import (
     ROSController
 )
-from logic.discrete_sync_and_swarm_logic import DiscreteLogic
-from position_feedback.optitrack import Optitrack
-from knowledge.separate_knowledge import SeparateKnowledge
-from communication.ros_communication import ROSCommunication
-from system_state import SystemState
-from visualization.live_visualization import LiveVisualization
-from logger.state_log import StateLog
-
-from utils.get_properties import estimate_radius
+from robot_framework.logic.discrete_sync_and_swarm_logic import DiscreteLogic
+from robot_framework.position_feedback.optitrack import Optitrack
+from robot_framework.knowledge.separate_knowledge import SeparateKnowledge
+from robot_framework.communication.ros_communication import ROSCommunication
+from robot_framework.system_state import SystemState
+from robot_framework.visualization.balboa_visualization import (
+    BalboaVisualization
+)
+from robot_framework.logger.state_log import StateLog
 
 import rclpy
 
@@ -65,6 +65,7 @@ def main():
         params=initial_params,
     )
     visualizations = [
+        BalboaVisualization(),
     ]
     logger = StateLog(initial_params)
     controller = ROSController(

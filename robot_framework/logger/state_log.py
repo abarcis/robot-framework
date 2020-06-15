@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-from utils.state_utils import copy_all_states
+from robot_framework.utils.state_utils import copy_all_states
 
 
 class StateLog:
