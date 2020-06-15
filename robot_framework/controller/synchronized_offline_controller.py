@@ -10,7 +10,7 @@ class SynchronizedOfflineController(BaseController, Teleoperation):
         self.key_poller = kwargs.pop('key_poller')
         self.was_pressed = 0
         self.teleop_velocity = None
-        self.keyboard_callbacks = {}
+        self.keyboard_callbacks = kwargs.pop('keyboard_callbacks', {})
         super(SynchronizedOfflineController, self).__init__(*args, **kwargs)
         for ident in self.system_state.ids:
             self.system_state.knowledge.update_state(

@@ -1,14 +1,15 @@
 #! /usr/bin/env python
 
-from controller.synchronized_offline_controller import (
+from robot_framework.controller.synchronized_offline_controller import (
     SynchronizedOfflineController
 )
-from logic.discrete_sync_and_swarm_logic import DiscreteSyncAndSwarmLogic
-from knowledge.shared_knowledge import SharedKnowledge
-from communication.offline_communication import OfflineCommunication
-from system_state import SystemState
-from crazyflies import CrazySwarmInterface
-import keyboard
+from robot_framework.logic.discrete_sync_and_swarm_logic import DiscreteLogic
+from robot_framework.knowledge.shared_knowledge import SharedKnowledge
+from robot_framework.communication.offline_communication import OfflineCommunication
+from robot_framework.system_state import SystemState
+from robot_framework.crazyflies import CrazySwarmInterface
+from robot_framework import keyboard
+from robot_framework.logger.state_log import StateLog
 import random
 
 
@@ -25,17 +26,17 @@ def main():
             {'J': 1.5, 'K': 1, 'M': 4, 'name': "SPLINTERED PHASE WAVE"},
             # {'J': 1, 'K': -1, 'M': 1, 'name': "ACTIVE PHASE WAVE"},
         ]
-        time_delta = 0.1
+        time_delta = 0.05
         small_phase_steps = 10
 
         initial_params = {
             'phase_levels_number': 24,
             'agent_radius': 0.1,
-            'min_distance': 0.4,
+            'min_distance': 0.1,
             'time_delta': time_delta,
             'small_phase_steps': small_phase_steps,
-            'orientation_mode': True,
-            'constraint_mode': True,
+            'orientation_mode': False,
+            'constraint_mode': False,
         }
         flying_altitude = 2
         initial_params.update(params_presets[0])
@@ -55,7 +56,7 @@ def main():
             for i, cf
             in enumerate(crazyswarm_interface.swarm.allcfs.crazyflies)
         }
-        logic = DiscreteSyncAndSwarmLogic(initial_params)
+        logic = DiscreteLogic(initial_params)
         knowledge = SharedKnowledge(ids)
         system_state = SystemState(
             ids,
@@ -69,24 +70,26 @@ def main():
 
         controller = SynchronizedOfflineController(
             agents_num,
-            logic,
-            crazyswarm_interface,
-            communication,
-            system_state,
-            crazyswarm_interface,
+            logic=logic,
+            position_feedback=crazyswarm_interface,
+            communication=communication,
+            system_state=system_state,
+            visualizations=[crazyswarm_interface],
             time_delta=time_delta,
-            teleoperated_id=ids[0],
+            # teleoperated_id=ids[0],
             key_poller=key_poller,
-            teleop_blinking=True,
+            teleop_on=True,
+            logger=StateLog(initial_params),
+            # teleop_blinking=True,
             params_list=params_presets,
             keyboard_callbacks={
                 'k': crazyswarm_interface.kill_random_drone,
                 'v': crazyswarm_interface.toggle_waving,
-                'o': logic.phase_logic.toggle_oscillations,
+                #'o': logic.phase_logic.toggle_oscillations,
                 'l': crazyswarm_interface.swarm.finish,
                 'f': crazyswarm_interface.swarm.finish_in_formation,
             },
-            is_active=False
+            # is_active=False
         )
 
         crazyswarm_interface.swarm.run_looped(

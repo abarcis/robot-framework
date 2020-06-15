@@ -165,7 +165,7 @@ class DiscretePositionLogic:
         )
         worst_case_distances = norm - 2 * max_speed * self.time_step
 
-        max_gradient = 1/N * sum(
+        max_gradient = 1./N * sum(
             [np.abs(
                 self.attraction_factor * (1 + self.J) +
                 self.repulsion_factor/(dist - 2 * self.agent_radius) ** 2
@@ -175,25 +175,25 @@ class DiscretePositionLogic:
             #     self.repulsion_factor/(dist - 2 * self.agent_radius)
             # ) for dist in distance_range]
         )
-        step_size = 1 / 2 / max_gradient / self.time_step
+        step_size = 1. / 2. / max_gradient / self.time_step
 
         attr = np.array([
             norm[j] *
             pos_diffs[j]/norm[j] for j in range(len(norm))
         ]) * self.attraction_factor
         if self.sync_interaction:
-            phase = state.phase_level/state.phase_levels_number
+            phase = float(state.phase_level)/state.phase_levels_number
             phase_potential = potential_M_N(
                 self.params['K'],
                 self.params['M'],
                 states=None,
-                phases=[p/state.phase_levels_number for p in phases] + [phase],
+                phases=[float(p)/state.phase_levels_number for p in phases] + [phase],
             )
             # print('step size', step_size, step_size * (1 - phase_potential**(1/10)))
-            step_size *= (1 - phase_potential**(1/10))
+            step_size *= (1 - phase_potential**(1./10))
             phase_diffs = [
                 (
-                    (p/state.phase_levels_number) -
+                    (float(p)/state.phase_levels_number) -
                     phase
                 ) * 2 * np.pi
                 for p in phases
@@ -235,6 +235,7 @@ class DiscretePositionLogic:
         speed = min((vel_norm, step_size * vel_norm, max_speed, step_size * max_speed))
 
         vel = vel/vel_norm * speed
+        print(1, vel)
 
         return vel
 

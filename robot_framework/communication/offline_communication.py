@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 from .base_communication import BaseCommunication
-from state import State
+from robot_framework.state import State
 
 
 class OfflineCommunication(BaseCommunication):
