@@ -73,6 +73,8 @@ class ROSController(BaseController):
             executor.add_node(rf_executor)
             executor.add_node(mission_client)
             executor.add_node(self.node)
+            if self.position_feedback.get_node() is not None:
+                executor.add_node(self.position_feedback.get_node())
             mission_client.get_logger().info(
                 'Node initialized, waiting for events.'
             )
@@ -82,4 +84,6 @@ class ROSController(BaseController):
             mission_client.destroy_node()
             rf_executor.destroy_node()
             self.node.destroy_node()
+            if self.position_feedback.get_node() is not None:
+                self.position_feedback.get_node().destroy_node()
             rclpy.shutdown()

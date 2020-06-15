@@ -11,8 +11,9 @@ from rclpy.qos import (
     QoSReliabilityPolicy,
 )
 from rclpy.node import Node
-from std_msgs.msg import Char, ColorRGBA, Float32, String
-from geometry_msgs.msg import TwistStamped
+from std_msgs.msg import Header, Char, ColorRGBA, Float32, String
+from geometry_msgs.msg import TwistStamped, Twist, Vector3
+from builtin_interfaces.msg import Time
 
 from .base_visualization import BaseVisualization
 
@@ -64,19 +65,19 @@ class BalboaVisualization(BaseVisualization):
             time.sleep(random.random()/2)
             self.color_pub.publish(color)
 
-            # x, y, z = state.position
-            # xs.append(x)
-            # ys.append(y)
-            # zs.append(z)
-            # positions.append(state.position)
-            # phases.append(state.phase)
-            # if state.orientation_mode:
-            #     vec = state.orientation.rotate([0.3, 0, 0])
-            #     begin = state.position
-            #     end = begin + vec
-            #     orientation_line = [
-            #         [begin[0], end[0]],
-            #         [begin[1], end[1]],
-            #         'k',
-            #     ]
-            #     orientations.append(orientation_line)
+            now = self.node.get_clock().now()
+            nanosec, sec = map(
+                int,
+                (now.nanoseconds % 10**9, now.nanoseconds/10**9)
+            )
+            header = Header(
+                frame_id="",
+                stamp=Time(sec=sec, nanosec=nanosec)
+            )
+            x, y, z = state.velocity
+            twist = Twist(
+                linear=Vector3(x=x, y=y, z=z),
+                angular=Vector3(x=0, y=0, z=state.angular_speed)
+            )
+            twist_msg = TwistStamped(header=header, twist=twist)
+            self.vel_pub.publish(twist_msg)

@@ -24,3 +24,6 @@ class PositionFeedback:
             angle=state.angular_speed * self.time_delta
         )
         return state.orientation * q
+
+    def get_node(self):
+        return None
