@@ -6,7 +6,7 @@ from controller.synchronized_offline_controller import (
     SynchronizedOfflineController
 )
 from logic.discrete_sync_and_swarm_logic import DiscreteLogic
-from position_feedback import PositionFeedback
+from position_feedback.position_feedback import PositionFeedback
 from knowledge.shared_knowledge import SharedKnowledge
 from communication.offline_communication import OfflineCommunication
 from system_state import SystemState
