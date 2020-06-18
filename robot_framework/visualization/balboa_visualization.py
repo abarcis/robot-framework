@@ -35,7 +35,7 @@ class BalboaVisualization(BaseVisualization):
 
         self.vel_pub = self.node.create_publisher(
             TwistStamped,
-            "vel_swing",
+            "vel",
             qos_profile=CUSTOM_QOS,
         )
         self.color_pub = self.node.create_publisher(
@@ -50,10 +50,9 @@ class BalboaVisualization(BaseVisualization):
         )
 
     def update(self, states, t=None):
-        print(states, t)
-        self.node.get_logger().info(
-            'state received'
-        )
+        # self.node.get_logger().info(
+        #     'state received'
+        # )
 
         for state in states.values():
             rgb = colorsys.hsv_to_rgb(state.phase, 1, 1)
@@ -62,7 +61,6 @@ class BalboaVisualization(BaseVisualization):
             color.r = float(rgb[0])
             color.g = float(rgb[1])
             color.b = float(rgb[2])
-            time.sleep(random.random()/2)
             self.color_pub.publish(color)
 
             now = self.node.get_clock().now()
@@ -76,8 +74,8 @@ class BalboaVisualization(BaseVisualization):
             )
             x, y, z = state.velocity
             twist = Twist(
-                linear=Vector3(x=x, y=y, z=z),
-                angular=Vector3(x=0, y=0, z=state.angular_speed)
+                linear=Vector3(x=float(x), y=float(y), z=float(z)),
+                angular=Vector3(x=0., y=0., z=float(state.angular_speed))
             )
             twist_msg = TwistStamped(header=header, twist=twist)
             self.vel_pub.publish(twist_msg)

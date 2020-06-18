@@ -28,6 +28,7 @@ class ROSController(BaseController):
 
     def update_params(self, params):
         self.logic.update_params(params)
+        self.logger.save_and_reinit(params)
 
     def update(self, *args):
         for ident in self.system_state.ids:
@@ -57,10 +58,11 @@ class ROSController(BaseController):
                     self.system_state.states[ident]
                 )
 
-                for visualization in self.visualizations:
-                    visualization.update(
-                        self.system_state.states, self.current_time
-                    )
+        for visualization in self.visualizations:
+            visualization.update(
+                self.system_state.states, self.current_time
+            )
+        self.logger.update(self.current_time, self.system_state)
 
         self.current_time += self.time_delta
 

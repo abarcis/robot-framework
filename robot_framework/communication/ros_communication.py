@@ -22,12 +22,12 @@ class ROSCommunication(BaseCommunication):
         if self.ident != 'base_station':
             self.state_publisher = self.node.create_publisher(
                 StateMsg,
-                'state',
+                '/state',
                 100
             )
         self.state_subscription = self.node.create_subscription(
             StateMsg,
-            'state',
+            '/state',
             self.receive_state_callback,
             100
         )
@@ -49,7 +49,8 @@ class ROSCommunication(BaseCommunication):
         return State(
             position=position, phase=phase, orientation=orientation,
             params=self.params,
-            sent_timestamp=datetime.fromtimestamp(msg.header.stamp.sec)
+            sent_timestamp=datetime.fromtimestamp(msg.header.stamp.sec),
+            received_timestamp=datetime.now(),
         )
 
     def create_state_msg(self, sender, state, recipient_ident):
@@ -95,11 +96,14 @@ class ROSCommunication(BaseCommunication):
 
     def receive_state_callback(self, msg):
         state = self.create_state_from_msg(msg)
-        self.receive_state(self.ident, state, str(msg.id))
+        self.receive_state(self.ident, state, str(msg.id).zfill(2))
 
     def receive_state(self, own_ident, state, sender_ident):
         if sender_ident == own_ident:
             return
+        self.node.get_logger().info(
+            'state received'
+        )
         if self.check_receive_filters(own_ident, sender_ident, state):
             self.receive_state_unconditionally(
                 own_ident, state, sender_ident

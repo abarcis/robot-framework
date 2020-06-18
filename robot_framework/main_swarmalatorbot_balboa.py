@@ -29,7 +29,7 @@ def main():
     ids = [
         socket.gethostname()[-2:],
     ]
-    time_delta = 0.1
+    time_delta = 0.05
     small_phase_steps = 10
 
     params_presets = [

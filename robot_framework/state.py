@@ -10,6 +10,7 @@ class State:
                  orientation=None, angular_speed=None, state=None,
                  received_timestamp=None, sent_timestamp=None,
                  params={}, initialize=True):
+        self._angle_xy = None
         self.area_size = 10
         if received_timestamp:
             self.received_timestamp = received_timestamp
@@ -95,7 +96,11 @@ class State:
     def orientation(self, value):
         self._orientation = value
         if value is not None:
+            # old_angle = self._angle_xy
             self._angle_xy = self.compute_angle_xy(value)
+            # if old_angle is not None:
+            #     print('ang speed', self.angular_speed,
+            #           'angle diff', self._angle_xy - old_angle)
 
     @property
     def angle_xy(self):
