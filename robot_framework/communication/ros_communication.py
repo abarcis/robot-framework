@@ -101,9 +101,6 @@ class ROSCommunication(BaseCommunication):
     def receive_state(self, own_ident, state, sender_ident):
         if sender_ident == own_ident:
             return
-        self.node.get_logger().info(
-            'state received'
-        )
         if self.check_receive_filters(own_ident, sender_ident, state):
             self.receive_state_unconditionally(
                 own_ident, state, sender_ident
