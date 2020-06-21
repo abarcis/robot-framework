@@ -8,7 +8,7 @@ from controller.bs_controller import (
     BSController
 )
 from logic.discrete_sync_and_swarm_logic import DiscreteLogic
-from position_feedback import PositionFeedback
+from position_feedback.position_feedback import PositionFeedback
 from knowledge.separate_knowledge import SeparateKnowledge
 from communication.ros_communication import ROSCommunication
 from system_state import SystemState
