@@ -12,6 +12,8 @@ from robot_framework import keyboard
 from robot_framework.logger.state_log import StateLog
 import random
 
+import numpy as np
+
 
 DEFAULT_IDENT = "{}"
 
@@ -21,24 +23,26 @@ def main():
         agents_num = 8
         params_presets = [
             {'J': 0.1, 'K': 1, 'M': 1, 'name': "STATIC SYNC"},
-            {'J': -1.5, 'K': 0.1, 'M': 4, 'name': "STATIC ASYNC"},
+            {'J': -1.5, 'K': 0.1, 'M': 2, 'name': "STATIC ASYNC"},
             {'J': 1.4, 'K': 1, 'M': agents_num, 'name': "NEW STATIC PHASE WAVE"},
-            {'J': 1.5, 'K': 1, 'M': 4, 'name': "SPLINTERED PHASE WAVE"},
+            {'J': 1.5, 'K': 1, 'M': 3, 'name': "SPLINTERED PHASE WAVE"},
             # {'J': 1, 'K': -1, 'M': 1, 'name': "ACTIVE PHASE WAVE"},
         ]
         time_delta = 0.05
         small_phase_steps = 10
+        flying_altitude = 2
 
         initial_params = {
             'phase_levels_number': 24,
             'agent_radius': 0.1,
-            'min_distance': 0.1,
+            'min_distance': 0.3,
+            'attraction_factor': 0.75,
             'time_delta': time_delta,
             'small_phase_steps': small_phase_steps,
             'orientation_mode': False,
             'constraint_mode': False,
+            'goal': np.array([0, 0, flying_altitude])
         }
-        flying_altitude = 2
         initial_params.update(params_presets[0])
 
         crazyswarm_interface = CrazySwarmInterface(
@@ -49,7 +53,7 @@ def main():
             cf.id: cf.initialPosition
             for cf in crazyswarm_interface.swarm.allcfs.crazyflies
         }
-        uniform_phases = [1. / len(ids) * i for i in range(len(ids))]
+        uniform_phases = [random.random() for i in range(len(ids))] # 1. / len(ids) * i
         random.shuffle(uniform_phases)
         phases = {
             cf.id: uniform_phases[i]
@@ -62,7 +66,8 @@ def main():
             ids,
             knowledge,
             positions=positions,
-            phases=phases
+            phases=phases,
+            params=initial_params
         )
         communication = OfflineCommunication(system_state)
 

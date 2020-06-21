@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+from __future__ import division
+
 import numpy as np
 
 from .base_logic import BaseLogic
@@ -139,6 +141,7 @@ class DiscretePositionLogic:
         self.J = params.get('J', 0.1)
         self.params = params
         self.time_step = params['time_delta'] * params['small_phase_steps']
+        self.goal = params.get('goal', None)
 
         self.sync_interaction = True
 
@@ -208,7 +211,10 @@ class DiscretePositionLogic:
             )
             for j in range(len(norm))
         ]) * self.repulsion_factor
-        new_vel = 1./N * np.sum(attr - rep, axis=0)
+        goal_attr = 0
+        if self.goal is not None:
+            goal_attr = 0.1 * (self.goal - position)
+        new_vel = 1./N * np.sum(attr - rep, axis=0) + goal_attr
         vel = (
             self.momentum_param * last_vel +
             (1 - self.momentum_param) * new_vel
@@ -235,7 +241,6 @@ class DiscretePositionLogic:
         speed = min((vel_norm, step_size * vel_norm, max_speed, step_size * max_speed))
 
         vel = vel/vel_norm * speed
-        print(1, vel)
 
         return vel
 
@@ -287,7 +292,7 @@ class DiscreteLogic(BaseLogic):
         if state.small_phase == np.floor(0.5 * self.small_phase_steps):
             positions_and_phases = [
                 (s.position, s.phase_level)
-                for ident, s in states
+                for ident2, s in states
                 if s.position is not None
             ]
             state = state.predict(

@@ -1,7 +1,11 @@
 #! /usr/bin/env python
 
+from __future__ import division
+
 from .base_controller import BaseController
 from .teleoperation import Teleoperation
+
+from datetime import datetime
 
 
 class SynchronizedOfflineController(BaseController, Teleoperation):
@@ -12,6 +16,7 @@ class SynchronizedOfflineController(BaseController, Teleoperation):
         self.was_pressed = 0
         self.teleop_velocity = None
         self.keyboard_callbacks = kwargs.pop('keyboard_callbacks', {})
+        self.last_iter = datetime.now()
         super(SynchronizedOfflineController, self).__init__(*args, **kwargs)
         for ident in self.system_state.ids:
             self.system_state.knowledge.update_state(
@@ -21,6 +26,7 @@ class SynchronizedOfflineController(BaseController, Teleoperation):
             )
 
     def update(self, *args):
+        self.last_iter = datetime.now()
         if self.teleop_on:
             self.teleoperate()
         for ident in self.system_state.ids:

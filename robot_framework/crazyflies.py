@@ -80,7 +80,6 @@ class CrazySwarmInterface:
                 cf.keep_height(self.flying_altitude + waving_height)
             else:
                 cf.keep_height(self.flying_altitude)
-            print('cf vel', states[cf.id].velocity)
             cf.vel(states[cf.id].velocity)
             if (
                 states[cf.id].is_teleoperated and
