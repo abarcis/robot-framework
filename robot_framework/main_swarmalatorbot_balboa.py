@@ -29,8 +29,8 @@ def main():
     ids = [
         socket.gethostname()[-2:],
     ]
-    time_delta = 0.1
-    small_phase_steps = 10
+    time_delta = 0.125
+    small_phase_steps = 4
 
     params_presets = [
         {'J': 0.1, 'K': 1, 'M': 1, 'name': "STATIC SYNC"},
@@ -43,13 +43,14 @@ def main():
     ]
 
     initial_params = {
-        'phase_levels_number': 16,
-        'agent_radius': 0.1,
+        'phase_levels_number': 24,
+        'agent_radius': 0.2,
         'min_distance': 0.1,
         'time_delta': time_delta,
         'small_phase_steps': small_phase_steps,
         'orientation_mode': True,
         'constraint_mode': True,
+        'attraction_factor': 0.75,
     }
     initial_params.update(params_presets[0])
 

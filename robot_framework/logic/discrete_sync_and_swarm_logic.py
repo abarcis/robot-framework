@@ -256,7 +256,7 @@ class DiscretePositionLogic:
         vel_angle_diff = np.sin(
             (vel_angle - state.angle_xy)
         )
-        ang_speed = vel_angle_diff / self.time_step * (1 - phase_potential**(1/10))
+        ang_speed = vel_angle_diff / self.time_step * (1 - phase_potential**(1/10)) / 2
 
         return max(
             -self.max_angular_speed,
@@ -310,6 +310,7 @@ class DiscreteLogic(BaseLogic):
                 self.velocity_updates[ident] = self.position_logic.update_position(
                     state, positions, phases
                 )
+                # print('calculated', self.velocity_updates[ident])
                 if state.constraint_mode:
                     vel = self.velocity_updates[ident]
                     self.angular_speed_updates[ident] = (
@@ -321,6 +322,7 @@ class DiscreteLogic(BaseLogic):
                     angle_diff = state.angle_xy - vel_angle
                     v_value = np.linalg.norm(vel) * np.cos(angle_diff)
                     self.velocity_updates[ident] = np.array([v_value, 0, 0])
+                    # print('constrained', self.velocity_updates[ident])
 
                 phase_correction_update = self.phase_logic.update_discrete_phase(
                     state, positions, phases

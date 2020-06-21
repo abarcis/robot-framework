@@ -3,6 +3,8 @@
 import rclpy
 from rclpy.executors import SingleThreadedExecutor
 
+import numpy as np
+
 from .base_controller import BaseController
 from robot_framework.rf_mission_executor import RFMissionExecutor
 from mission_manager.client import MissionClient
@@ -22,12 +24,22 @@ class ROSController(BaseController):
             timer_period_sec=self.time_delta,
             callback=self.update
         )
+        self.reinit_phases()
+
+    def reinit_phases(self):
+        for s in self.system_state.states.values():
+            small_period = 1. / s.phase_levels_number
+            s.phase = np.random.random()
+            s.phase_level = int(s.phase / small_period)
+            s.small_phase = 0  # small phases synchronized at the beginning
 
     def stop(self):
+        self.logger.save()
         self.node.destroy_timer(self.timer)
 
     def update_params(self, params):
         self.logic.update_params(params)
+        self.logger.save_and_reinit(params)
 
     def update(self, *args):
         for ident in self.system_state.ids:
@@ -52,15 +64,21 @@ class ROSController(BaseController):
             )
 
             if self.system_state.states[ident].small_phase == 0:
+                print(self.communication.received, 'received messages,',
+                      self.communication.delayed, 'delayed')
+                self.communication.received = 0
+                self.communication.delayed = 0
+                print(self.system_state.states[ident].velocity)
                 self.communication.send_state(
                     ident,
                     self.system_state.states[ident]
                 )
 
-                for visualization in self.visualizations:
-                    visualization.update(
-                        self.system_state.states, self.current_time
-                    )
+        for visualization in self.visualizations:
+            visualization.update(
+                self.system_state.states, self.current_time
+            )
+        self.logger.update(self.current_time, self.system_state)
 
         self.current_time += self.time_delta
 
