@@ -22,6 +22,11 @@ class RFMissionExecutor(Node, MissionExecutor):
         self.controller.stop()
 
     def change_params(self, params, timestamp):
+        for k, p in params.items():
+            if k == 'M':
+                params[k] = int(p)
+            else:
+                params[k] = float(p)
         self.get_logger().info(
             'Changing parameters to {}'.format(params)
         )

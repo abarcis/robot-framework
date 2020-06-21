@@ -15,12 +15,15 @@ class StateLog:
         self.knowledge_log = []
         self.params = params
 
-    def save_and_reinit(self, params):
-        # save to file
+    def save(self):
         filename = f'/home/pi/log/{datetime.now()}:J={self.params["J"]},K={self.params["K"]},M={self.params["M"]}.json'
         data = {'states': self.states_log, 'knowledge': self.knowledge_log}
         with open(filename, 'w') as f:
             json.dump(data, f, cls=MyEncoder)
+
+    def save_and_reinit(self, params):
+        # save to file
+        self.save()
         # reinit
         self.reinit(params)
 
