@@ -69,7 +69,6 @@ class LiveVisualization(BaseVisualization):
 
         if len(xs) >= self.params.get('agents_num', 0):
             if self.plot is None:
-                print('new plot')
                 s = None
                 if self.agent_radius:
                     ppd = 0.5 * 72./self.ax.figure.dpi
@@ -89,7 +88,6 @@ class LiveVisualization(BaseVisualization):
                 )
                 # plt.pause(0.001)
             else:
-                print('updating plot')
                 # import numpy as np
                 self.plot._offsets3d = (xs, ys, zs)
                 self.plot.set_facecolors(colors)

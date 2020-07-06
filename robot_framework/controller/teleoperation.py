@@ -53,11 +53,14 @@ class Teleoperation:
                     for vis in self.visualizations:
                         vis.reinit(new_params)
                     if self.logger:
-                        self.logger.reinit(new_params)
-                    if new_params['name'] == 'STATIC PHASE WAVE':
-                        self.reassign_phases(phase_ordering='ANGLE')
+                        self.logger.save_and_reinit(new_params)
+                    if new_params.get('reinit', False):
+                        self.system_state.reinit(new_params)
                     else:
-                        self.reassign_phases(phase_ordering='MODIFY')
+                        if new_params['name'] == 'STATIC PHASE WAVE':
+                            self.reassign_phases(phase_ordering='ANGLE')
+                        else:
+                            self.reassign_phases(phase_ordering='MODIFY')
                 except IndexError:
                     logging.error("No parameter set with this index")
             if pressed_key in self.keyboard_callbacks.keys():

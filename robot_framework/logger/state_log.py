@@ -10,28 +10,29 @@ from pyquaternion import Quaternion
 
 
 class StateLog:
-    def __init__(self, params):
+    def __init__(self, params, path):
         self.states_log = []
         self.knowledge_log = []
         self.params = params
+        self.path = path
 
     def save(self):
-        filename = f'/home/pi/log/{datetime.now()}:J={self.params["J"]},K={self.params["K"]},M={self.params["M"]}.json'
+        filename = f'{self.path}/{datetime.now()}:J={self.params["J"]},K={self.params["K"]},M={self.params["M"]}.json'
         data = {'states': self.states_log, 'knowledge': self.knowledge_log}
         with open(filename, 'w') as f:
             json.dump(data, f, cls=MyEncoder)
 
     def save_and_reinit(self, params):
         # save to file
-        self.save()
+        # self.save()
         # reinit
         self.reinit(params)
 
     def reinit(self, params):
-        self.__init__(params)
+        self.__init__(params, self.path)
 
     def update(self, time, system_state):
-        self.states_log.append((time, copy_all_states(system_state)))
+        self.states_log.append((time, deepcopy(system_state.states)))
         self.knowledge_log.append(
             (time, deepcopy(system_state.knowledge.knowledge))
         )

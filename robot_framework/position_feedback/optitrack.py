@@ -8,12 +8,12 @@ from geometry_msgs.msg import PoseStamped
 
 
 class Optitrack:
-    def __init__(self, states, time_delta):
+    def __init__(self, system_state, time_delta):
         self.node = Node('position_feedback')
-        self.states = states
+        self.system_state = system_state
         self.time_delta = time_delta
         self.poses = {ident: {'position': None, 'orientation': None}
-                      for ident in self.states.keys()}
+                      for ident in self.system_state.states.keys()}
         self.subscribers = [
             self.node.create_subscription(
                 PoseStamped,
@@ -21,7 +21,7 @@ class Optitrack:
                 self.set_new_pose_callback(ident),
                 1,
             )
-            for ident in self.states.keys()
+            for ident in self.system_state.states.keys()
         ]
 
     def set_new_pose_callback(self, ident):

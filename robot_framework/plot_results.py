@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def parse_data(filenames):
+def parse_convergence_time_data(filenames):
     data = {'original': {}, 'discrete': {}}
     for f in filenames:
         d = f.split(':')
@@ -46,11 +46,15 @@ def plot_convergence_time(data):
 
 
 def main():
-    results_dir = 'results/'
-    all_result_dirs = sorted(os.listdir(results_dir))
-    results_filenames = os.listdir(f'{results_dir}{all_result_dirs[-1]}')
-    data = parse_data(results_filenames)
-    plot_convergence_time(data)
+    convergence_results_dir = 'results/'
+    all_result_dirs = sorted(os.listdir(convergence_results_dir))
+    convergence_results_filenames = os.listdir(
+        f'{convergence_results_dir}{all_result_dirs[-1]}'
+    )
+    convergence_time_data = parse_convergence_time_data(
+        convergence_results_filenames
+    )
+    plot_convergence_time(convergence_time_data)
 
 
 if __name__ == "__main__":

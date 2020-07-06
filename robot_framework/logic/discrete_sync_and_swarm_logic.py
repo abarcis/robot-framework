@@ -193,7 +193,7 @@ class DiscretePositionLogic:
                 phases=[float(p)/state.phase_levels_number for p in phases] + [phase],
             )
             # print('step size', step_size, step_size * (1 - phase_potential**(1/10)))
-            step_size *= (1 - phase_potential**(1./10))
+            step_size *= (1 - phase_potential**(1./self.params['M']))
             phase_diffs = [
                 (
                     (float(p)/state.phase_levels_number) -
@@ -321,6 +321,13 @@ class DiscreteLogic(BaseLogic):
                     vel_angle = np.arctan2(vel[1], vel[0])
                     angle_diff = state.angle_xy - vel_angle
                     v_value = np.linalg.norm(vel) * np.cos(angle_diff)
+
+                    ##### hacks for balboas####
+                    if(v_value < 0.05 and v_value > 0.01):
+                        if np.random.random() < v_value/0.05:
+                            v_value = 0.05
+                        # print("WARNING: speed too low")
+                    #############
                     self.velocity_updates[ident] = np.array([v_value, 0, 0])
                     # print('constrained', self.velocity_updates[ident])
 
