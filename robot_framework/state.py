@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+from __future__ import division
+
 import numpy as np
 from pyquaternion import Quaternion
 from datetime import datetime
@@ -154,11 +156,12 @@ class State:
             new_position = position_feedback.get_new_position(
                 ident
             )
-            new_orientation = position_feedback.get_new_orientation(
-                ident
-            )
+            if self.orientation_mode:
+                new_orientation = position_feedback.get_new_orientation(
+                    ident
+                )
+                self.orientation = new_orientation
             self.position = new_position
-            self.orientation = new_orientation
 
     def predict(self, time_delta=0):
         if not self.constraint_mode:

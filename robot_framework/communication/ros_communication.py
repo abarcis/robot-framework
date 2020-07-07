@@ -19,6 +19,8 @@ class ROSCommunication(BaseCommunication):
         self.ident = kwargs.pop('agent_id')
         self.node = kwargs.pop('node')
         self.params = kwargs.pop('params')
+        self.received = 0
+        self.delayed = 0
         if self.ident != 'base_station':
             self.state_publisher = self.node.create_publisher(
                 StateMsg,
@@ -49,7 +51,7 @@ class ROSCommunication(BaseCommunication):
         return State(
             position=position, phase=phase, orientation=orientation,
             params=self.params,
-            sent_timestamp=datetime.fromtimestamp(msg.header.stamp.sec),
+            sent_timestamp=datetime.fromtimestamp(msg.header.stamp.sec + msg.header.stamp.nanosec / 10**9),
             received_timestamp=datetime.now(),
         )
 
@@ -101,6 +103,9 @@ class ROSCommunication(BaseCommunication):
     def receive_state(self, own_ident, state, sender_ident):
         if sender_ident == own_ident:
             return
+        self.received += 1
+        if (state.received_timestamp - state.timestamp).total_seconds() > 0.2:
+            self.delayed += 1
         if self.check_receive_filters(own_ident, sender_ident, state):
             self.receive_state_unconditionally(
                 own_ident, state, sender_ident

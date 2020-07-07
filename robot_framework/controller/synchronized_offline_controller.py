@@ -1,7 +1,11 @@
 #! /usr/bin/env python
 
+from __future__ import division
+
 from .base_controller import BaseController
 from .teleoperation import Teleoperation
+
+from datetime import datetime
 
 
 class SynchronizedOfflineController(BaseController, Teleoperation):
@@ -11,7 +15,8 @@ class SynchronizedOfflineController(BaseController, Teleoperation):
         self.real_time_vis = kwargs.pop('real_time_vis', True)
         self.was_pressed = 0
         self.teleop_velocity = None
-        self.keyboard_callbacks = {}
+        self.keyboard_callbacks = kwargs.pop('keyboard_callbacks', {})
+        self.last_iter = datetime.now()
         super(SynchronizedOfflineController, self).__init__(*args, **kwargs)
         for ident in self.system_state.ids:
             self.system_state.knowledge.update_state(
@@ -21,6 +26,7 @@ class SynchronizedOfflineController(BaseController, Teleoperation):
             )
 
     def update(self, *args):
+        self.last_iter = datetime.now()
         if self.teleop_on:
             self.teleoperate()
         for ident in self.system_state.ids:
@@ -51,13 +57,7 @@ class SynchronizedOfflineController(BaseController, Teleoperation):
 
         self.logger.update(self.current_time, self.system_state)
         t = self.current_time
-        if self.real_time_vis:
-            if self.system_state.states.values()[0].small_phase == 0:
-                for visualization in self.visualizations:
-                    visualization.update(
-                        self.system_state.states, self.current_time
-                    )
-        elif abs(t % 1) < 0.001 or 1 - abs(t % 1) < 0.001:
+        if abs(t % 1) < 0.001 or 1 - abs(t % 1) < 0.001:
             for visualization in self.visualizations:
                 visualization.update(
                     self.system_state.states, self.current_time

@@ -27,20 +27,8 @@ def main():
         ids = [
             DEFAULT_IDENT.format(i) for i in range(agents_num)
         ]
-        time_delta = 0.1
-        small_phase_steps = 10
-
-        params_presets = [
-            {'J': 0.1, 'K': 1, 'M': 1, 'name': "STATIC SYNC"},
-            {'J': -1.5, 'K': 0.25, 'M': 6, 'name': "STATIC ASYNC"},
-            {'J': -1.5, 'K': 0.1, 'M': 4, 'name': "STATIC ASYNC"},
-            {'J': -1.5, 'K': 0.1, 'M': 3, 'name': "STATIC ASYNC"},
-            {'J': 1.4, 'K': 1, 'M': agents_num, 'name': "NEW STATIC PHASE WAVE"},
-            {'J': 1.5, 'K': 1, 'M': 6, 'name': "SPLINTERED PHASE WAVE"},
-            {'J': 1, 'K': -1, 'M': 1, 'name': "ACTIVE PHASE WAVE"},
-            {'J': 1, 'K': 0.25, 'M': agents_num, 'name': "TEST"},
-        ]
-
+        time_delta = 0.125
+        small_phase_steps = 4
         initial_params = {
             'phase_levels_number': 24,
             'agent_radius': 0.1,
@@ -49,15 +37,27 @@ def main():
             'small_phase_steps': small_phase_steps,
             'orientation_mode': True,
             'constraint_mode': True,
+            'reinit': True,
         }
-        initial_params.update(params_presets[0])
+
+        params_presets = [
+            {'J': 0.1, 'K': 1, 'M': 1, 'name': "STATIC SYNC", **initial_params},
+            {'J': -1, 'K': 0.2, 'M': 4, 'name': "STATIC ASYNC", **initial_params},
+            {'J': -1, 'K': 0.2, 'M': 3, 'name': "STATIC ASYNC", **initial_params},
+            {'J': 1.4, 'K': 1, 'M': agents_num, 'name': "NEW STATIC PHASE WAVE", **initial_params},
+            {'J': 1.5, 'K': 1, 'M': 6, 'name': "SPLINTERED PHASE WAVE", **initial_params},
+            {'J': 1.5, 'K': 1, 'M': 4, 'name': "SPLINTERED PHASE WAVE", **initial_params},
+            {'J': 1, 'K': -1, 'M': 1, 'name': "ACTIVE PHASE WAVE", **initial_params},
+        ]
+
+        # initial_params.update(params_presets[0])
+        initial_params = params_presets[0]
         print(estimate_radius(agents_num, initial_params['J'],
                               d=initial_params['agent_radius']))
-
         logic = DiscreteLogic(initial_params)
         knowledge = SharedKnowledge(ids)
         system_state = SystemState(ids, knowledge, params=initial_params)
-        position_feedback = PositionFeedback(system_state.states, time_delta)
+        position_feedback = PositionFeedback(system_state, time_delta)
         communication = OfflineCommunication(system_state)
         visualizations = [
             OrderParamsVisualization(params=initial_params),
@@ -66,7 +66,7 @@ def main():
                 params=initial_params,
             ),
         ]
-        logger = StateLog(initial_params)
+        logger = StateLog(initial_params, path='results/log')
         controller = SynchronizedOfflineController(
             agents_num,
             logic=logic,

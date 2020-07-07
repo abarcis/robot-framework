@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+from __future__ import division
+
 import numpy as np
 
 from .base_logic import BaseLogic
@@ -139,6 +141,7 @@ class DiscretePositionLogic:
         self.J = params.get('J', 0.1)
         self.params = params
         self.time_step = params['time_delta'] * params['small_phase_steps']
+        self.goal = params.get('goal', None)
 
         self.sync_interaction = True
 
@@ -165,7 +168,7 @@ class DiscretePositionLogic:
         )
         worst_case_distances = norm - 2 * max_speed * self.time_step
 
-        max_gradient = 1/N * sum(
+        max_gradient = 1./N * sum(
             [np.abs(
                 self.attraction_factor * (1 + self.J) +
                 self.repulsion_factor/(dist - 2 * self.agent_radius) ** 2
@@ -175,25 +178,25 @@ class DiscretePositionLogic:
             #     self.repulsion_factor/(dist - 2 * self.agent_radius)
             # ) for dist in distance_range]
         )
-        step_size = 1 / 2 / max_gradient / self.time_step
+        step_size = 1. / 2. / max_gradient / self.time_step
 
         attr = np.array([
             norm[j] *
             pos_diffs[j]/norm[j] for j in range(len(norm))
         ]) * self.attraction_factor
         if self.sync_interaction:
-            phase = state.phase_level/state.phase_levels_number
+            phase = float(state.phase_level)/state.phase_levels_number
             phase_potential = potential_M_N(
                 self.params['K'],
                 self.params['M'],
                 states=None,
-                phases=[p/state.phase_levels_number for p in phases] + [phase],
+                phases=[float(p)/state.phase_levels_number for p in phases] + [phase],
             )
             # print('step size', step_size, step_size * (1 - phase_potential**(1/10)))
-            step_size *= (1 - phase_potential**(1/10))
+            step_size *= (1 - phase_potential**(1./self.params['M']))
             phase_diffs = [
                 (
-                    (p/state.phase_levels_number) -
+                    (float(p)/state.phase_levels_number) -
                     phase
                 ) * 2 * np.pi
                 for p in phases
@@ -208,7 +211,10 @@ class DiscretePositionLogic:
             )
             for j in range(len(norm))
         ]) * self.repulsion_factor
-        new_vel = 1./N * np.sum(attr - rep, axis=0)
+        goal_attr = 0
+        if self.goal is not None:
+            goal_attr = 0.1 * (self.goal - position)
+        new_vel = 1./N * np.sum(attr - rep, axis=0) + goal_attr
         vel = (
             self.momentum_param * last_vel +
             (1 - self.momentum_param) * new_vel
@@ -286,7 +292,7 @@ class DiscreteLogic(BaseLogic):
         if state.small_phase == np.floor(0.5 * self.small_phase_steps):
             positions_and_phases = [
                 (s.position, s.phase_level)
-                for ident, s in states
+                for ident2, s in states
                 if s.position is not None
             ]
             state = state.predict(
@@ -315,6 +321,13 @@ class DiscreteLogic(BaseLogic):
                     vel_angle = np.arctan2(vel[1], vel[0])
                     angle_diff = state.angle_xy - vel_angle
                     v_value = np.linalg.norm(vel) * np.cos(angle_diff)
+
+                    ##### hacks for balboas####
+                    if(v_value < 0.05 and v_value > 0.01):
+                        if np.random.random() < v_value/0.05:
+                            v_value = 0.05
+                        # print("WARNING: speed too low")
+                    #############
                     self.velocity_updates[ident] = np.array([v_value, 0, 0])
                     # print('constrained', self.velocity_updates[ident])
 

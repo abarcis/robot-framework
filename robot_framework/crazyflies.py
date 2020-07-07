@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-from pykpkswarm.kpkswarm import KPKCrazySwarm
+from .pykpkswarm.kpkswarm import KPKCrazySwarm
 import colorsys
 import logging
 import math
@@ -71,7 +71,7 @@ class CrazySwarmInterface:
             self.swarm.timeHelper.sleep(offset)
         self.swarm.timeHelper.sleep(duration + time_extra)
 
-    def update(self, states):
+    def update(self, states, t):
         for cf in self.swarm.allcfs.crazyflies:
             r, g, b = colorsys.hsv_to_rgb(states[cf.id].phase, 1, 1)
 

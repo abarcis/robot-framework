@@ -43,12 +43,19 @@ class SystemState:
                     params=params
                 )
                 if position is None:
-                    correct = check_if_position_correct(state, self.states, params)
+                    correct = check_if_position_correct(
+                        state, self.states, params
+                    )
                     while not correct:
                         state = State(
                             position=position,
                             phase=phase,
                             params=params
                         )
-                        correct = check_if_position_correct(state, self.states, params)
+                        correct = check_if_position_correct(
+                            state, self.states, params
+                        )
                 self.states[ident] = state
+
+    def reinit(self, params):
+        self.__init__(ids=self.ids, knowledge=self.knowledge, params=params)
