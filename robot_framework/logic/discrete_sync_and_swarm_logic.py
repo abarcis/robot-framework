@@ -288,8 +288,9 @@ class DiscreteLogic(BaseLogic):
         phase_updates = self.phase_logic.update_phase(
             state,
         )
+        small_phase = phase_updates["small_phase"]
 
-        if state.small_phase == np.floor(0.5 * self.small_phase_steps):
+        if small_phase == np.floor(0.5 * self.small_phase_steps):
             positions_and_phases = [
                 (s.position, s.phase_level)
                 for ident2, s in states
@@ -341,7 +342,7 @@ class DiscreteLogic(BaseLogic):
                     phase_correction_update["phase_correction"]
                 )
 
-        if state.small_phase == 0:
+        if small_phase == 0:
             velocity_update = self.velocity_updates.pop(ident, None)
             angular_speed_update = self.angular_speed_updates.pop(ident, None)
             phase_updates["phase_level"] = (
