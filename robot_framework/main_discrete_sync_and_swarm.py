@@ -2,42 +2,45 @@
 
 import time
 
-from controller.synchronized_offline_controller import (
+from robot_framework.controller.synchronized_offline_controller import (
     SynchronizedOfflineController
 )
-from logic.discrete_sync_and_swarm_logic import DiscreteLogic
-from position_feedback.position_feedback import PositionFeedback
-from knowledge.shared_knowledge import SharedKnowledge
-from communication.offline_communication import OfflineCommunication
-from system_state import SystemState
-from visualization.live_visualization import LiveVisualization
-from visualization.order_params_visualization import OrderParamsVisualization
-from logger.state_log import StateLog
+from robot_framework.logic.discrete_sync_and_swarm_logic import DiscreteLogic
+from robot_framework.position_feedback.position_feedback import PositionFeedback
+from robot_framework.knowledge.shared_knowledge import SharedKnowledge
+from robot_framework.communication.offline_communication import OfflineCommunication
+from robot_framework.system_state import SystemState
+from robot_framework.visualization.live_visualization import LiveVisualization
+from robot_framework.visualization.order_params_visualization import OrderParamsVisualization
+from robot_framework.logger.state_log import StateLog
 
-from utils.get_properties import estimate_radius
+from robot_framework.utils.get_properties import estimate_radius
 
-import keyboard
+import robot_framework.keyboard as keyboard
 
 DEFAULT_IDENT = "a{}"
 
 
 def main():
     with keyboard.KeyPoller() as key_poller:
+        random.seed(0)
         agents_num = 12
         ids = [
             DEFAULT_IDENT.format(i) for i in range(agents_num)
         ]
-        time_delta = 0.125
-        small_phase_steps = 4
+        period = 0.25
+        small_phase_steps = 2
+        time_delta = period / small_phase_steps
         initial_params = {
             'phase_levels_number': 24,
             'agent_radius': 0.1,
             'min_distance': 0.1,
             'time_delta': time_delta,
             'small_phase_steps': small_phase_steps,
-            'orientation_mode': True,
-            'constraint_mode': True,
+            'orientation_mode': False,
+            'constraint_mode': False,
             'reinit': True,
+            'attraction_factor': 0.75,
         }
 
         params_presets = [

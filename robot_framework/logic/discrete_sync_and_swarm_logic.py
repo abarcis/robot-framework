@@ -143,7 +143,9 @@ class DiscretePositionLogic:
         self.time_step = params['time_delta'] * params['small_phase_steps']
         self.goal = params.get('goal', None)
 
-        self.sync_interaction = True
+        self.sync_interaction = params.get('sync_interaction', True)
+
+        self.speed_limit = params.get('speed_limit', True)
 
     def update_params(self, params):
         self.J = params.get('J', self.J)
@@ -166,19 +168,21 @@ class DiscretePositionLogic:
                 0.0001
             ) / (4 * self.time_step)
         )
-        worst_case_distances = norm - 2 * max_speed * self.time_step
+        step_size = 1
+        if self.speed_limit:
+            worst_case_distances = norm - 2 * max_speed * self.time_step
 
-        max_gradient = 1./N * sum(
-            [np.abs(
-                self.attraction_factor * (1 + self.J) +
-                self.repulsion_factor/(dist - 2 * self.agent_radius) ** 2
-            ) for dist in worst_case_distances]
-            # [np.abs(
-            #     self.attraction_factor * (1 + self.J) -
-            #     self.repulsion_factor/(dist - 2 * self.agent_radius)
-            # ) for dist in distance_range]
-        )
-        step_size = 1. / 2. / max_gradient / self.time_step
+            max_gradient = 1./N * sum(
+                [np.abs(
+                    self.attraction_factor * (1 + self.J) +
+                    self.repulsion_factor/(dist - 2 * self.agent_radius) ** 2
+                ) for dist in worst_case_distances]
+                # [np.abs(
+                #     self.attraction_factor * (1 + self.J) -
+                #     self.repulsion_factor/(dist - 2 * self.agent_radius)
+                # ) for dist in distance_range]
+            )
+            step_size = 1. / 2. / max_gradient / self.time_step
 
         attr = np.array([
             norm[j] *
@@ -192,8 +196,10 @@ class DiscretePositionLogic:
                 states=None,
                 phases=[float(p)/state.phase_levels_number for p in phases] + [phase],
             )
+
             # print('step size', step_size, step_size * (1 - phase_potential**(1/10)))
-            step_size *= (1 - phase_potential**(1./self.params['M']))
+            if self.speed_limit and self.sync_interaction:
+                step_size *= (1 - phase_potential**(1./self.params['M']))
             phase_diffs = [
                 (
                     (float(p)/state.phase_levels_number) -

@@ -10,7 +10,7 @@ from controller.offline_controller import (
 )
 from logic.discrete_sync_and_swarm_logic import DiscreteLogic
 from logic.sync_and_swarm_logic import SyncAndSwarmLogic
-from position_feedback import PositionFeedback
+from position_feedback.position_feedback import PositionFeedback
 from knowledge.shared_knowledge import SharedKnowledge
 from communication.offline_communication import OfflineCommunication
 from system_state import SystemState
@@ -30,7 +30,7 @@ import numpy as np
 import keyboard
 
 DEFAULT_IDENT = "a{}"
-SIM_NUMBER = 10
+SIM_NUMBER = 20
 
 
 def gen_pattern_formed_callback(vis, dirname, model='discrete'):
@@ -63,14 +63,14 @@ def gen_pattern_formed_callback(vis, dirname, model='discrete'):
 
 
 def main():
-    dirname = f'results/{datetime.datetime.now()}'
+    dirname = f'results/convergence/{datetime.datetime.now()}'
     os.mkdir(dirname)
     with keyboard.KeyPoller() as key_poller:
         agents_num = 12
         ids = [
             DEFAULT_IDENT.format(i) for i in range(agents_num)
         ]
-        time_deltas = np.arange(0.01, 0.5, 0.01)
+        time_deltas = np.arange(0.01, 0.51, 0.01)
         params_presets = [
             {'J': 0.1, 'K': 1, 'M': 1, 'name': "STATIC SYNC"},
         ]
@@ -119,9 +119,9 @@ def main():
                     logic = DiscreteLogic(initial_params)
                     knowledge = SharedKnowledge(ids)
                     system_state = SystemState(ids, knowledge, params=initial_params)
-                    position_feedback = PositionFeedback(system_state.states, time_delta)
+                    position_feedback = PositionFeedback(system_state, time_delta)
                     communication = OfflineCommunication(system_state)
-                    logger = StateLog(initial_params)
+                    logger = StateLog(initial_params, path=None)
                     controller = SynchronizedOfflineController(
                         agents_num,
                         logic=logic,
@@ -154,9 +154,9 @@ def main():
                 logic = SyncAndSwarmLogic(initial_params)
                 knowledge = SharedKnowledge(ids)
                 system_state = SystemState(ids, knowledge, params=initial_params)
-                position_feedback = PositionFeedback(system_state.states, time_delta)
+                position_feedback = PositionFeedback(system_state, time_delta)
                 communication = OfflineCommunication(system_state)
-                logger = StateLog(initial_params)
+                logger = StateLog(initial_params, path=None)
                 controller = OfflineController(
                     agents_num,
                     logic=logic,

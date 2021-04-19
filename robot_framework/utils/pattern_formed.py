@@ -11,7 +11,7 @@ def is_discrete_pattern_formed(states, params):
     velocities = np.array([s.velocity for s in states.values()])
     speeds = np.linalg.norm(velocities, axis=1)
     # print(max(speeds))
-    return potential < 1e-15 and max(speeds) < 0.005
+    return potential < 1e-15 and max(speeds) < 0.001
 
 
 def is_original_pattern_formed(states, params):
@@ -19,4 +19,4 @@ def is_original_pattern_formed(states, params):
     centroid = centroid_m(1, phases)
     velocities = np.array([s.velocity for s in states.values()])
     speeds = np.linalg.norm(velocities, axis=1)
-    return abs(1 - centroid) < 1e-10 and max(speeds) < 0.005
+    return abs(1 - centroid) < 1e-15 and max(speeds) < 0.001

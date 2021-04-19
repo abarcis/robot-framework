@@ -66,18 +66,21 @@ class SynchronizedOfflineController(BaseController, Teleoperation):
         self.current_time += self.time_delta
 
     def run(self):
-        while True:
-            self.update()
-            if self.mission_end_callback:
-                if self.mission_end_callback(
-                    self.current_time,
-                    self.system_state.states,
-                    self.logic.params,
-                ):
-                    for visualization in self.visualizations:
-                        visualization.update(
-                            self.system_state.states, self.current_time
-                        )
-                    return
-            if self.sleep_fcn:
-                self.sleep_fcn(self.time_delta)
+        try:
+            while True:
+                self.update()
+                if self.mission_end_callback:
+                    if self.mission_end_callback(
+                        self.current_time,
+                        self.system_state.states,
+                        self.logic.params,
+                    ):
+                        for visualization in self.visualizations:
+                            visualization.update(
+                                self.system_state.states, self.current_time
+                            )
+                        return
+                if self.sleep_fcn:
+                    self.sleep_fcn(self.time_delta)
+        finally:
+            self.logger.save()

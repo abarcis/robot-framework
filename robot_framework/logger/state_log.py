@@ -17,14 +17,16 @@ class StateLog:
         self.path = path
 
     def save(self):
-        filename = f'{self.path}/{datetime.now()}:J={self.params["J"]},K={self.params["K"]},M={self.params["M"]}.json'
+        if self.path is None:
+            return
+        filename = f'{self.path}/{datetime.now()}:J={self.params["J"]},K={self.params["K"]},M={self.params["M"]},T={self.params["time_delta"]}.json'
         data = {'states': self.states_log, 'knowledge': self.knowledge_log}
         with open(filename, 'w') as f:
             json.dump(data, f, cls=MyEncoder)
 
     def save_and_reinit(self, params):
         # save to file
-        # self.save()
+        self.save()
         # reinit
         self.reinit(params)
 

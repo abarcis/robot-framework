@@ -3,7 +3,7 @@
 import matplotlib.pyplot as plt
 
 from .base_visualization import BaseVisualization
-from utils.order_parameters import (
+from robot_framework.utils.order_parameters import (
     calculate_var_r,
     potential_M_N,
     angular_distance,

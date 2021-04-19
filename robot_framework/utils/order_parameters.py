@@ -44,7 +44,7 @@ def potential_M_N(K, M, states, phases=None):
 def get_angular_positions(states):
     positions = np.array([s.position for s in states])
     center = np.average(positions, axis=0)
-    positions_respect_center = positions - center[0]
+    positions_respect_center = positions - center
     angular_positions = np.array(
         [np.arctan2(p[1], p[0]) for p in positions_respect_center]
     )
