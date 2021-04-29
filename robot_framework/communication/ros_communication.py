@@ -73,7 +73,7 @@ class ROSCommunication(BaseCommunication):
                 w=state.orientation.elements[0]
             )
         else:
-            orientation = None
+            orientation = Quaternion()
 
         sender_ident = int(sender)
         phase = float(state.phase)

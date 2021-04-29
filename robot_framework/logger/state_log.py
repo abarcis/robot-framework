@@ -10,7 +10,7 @@ from pyquaternion import Quaternion
 
 
 class StateLog:
-    def __init__(self, params, path):
+    def __init__(self, params, path=None):
         self.states_log = []
         self.knowledge_log = []
         self.params = params

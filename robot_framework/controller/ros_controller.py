@@ -82,26 +82,29 @@ class ROSController(BaseController):
 
         self.current_time += self.time_delta
 
-    def run(self):
+    def run(self, additional_nodes=[]):
+        ros_nodes = []
         try:
             rf_executor = RFMissionExecutor(self)
             mission_client = MissionClient()
             mission_client.add_mission_executor(rf_executor)
-            executor = SingleThreadedExecutor()
-            executor.add_node(rf_executor)
-            executor.add_node(mission_client)
-            executor.add_node(self.node)
+
+            ros_nodes += [rf_executor, mission_client, self.node]
+
             if self.position_feedback.get_node() is not None:
-                executor.add_node(self.position_feedback.get_node())
+                ros_nodes.append(self.position_feedback.get_node())
+
+            ros_nodes += additional_nodes
+
+            executor = SingleThreadedExecutor()
+            for node in ros_nodes:
+                executor.add_node(node)
             mission_client.get_logger().info(
                 'Node initialized, waiting for events.'
             )
             executor.spin()
 
         finally:
-            mission_client.destroy_node()
-            rf_executor.destroy_node()
-            self.node.destroy_node()
-            if self.position_feedback.get_node() is not None:
-                self.position_feedback.get_node().destroy_node()
+            for node in ros_nodes:
+                node.destroy_node()
             rclpy.shutdown()
