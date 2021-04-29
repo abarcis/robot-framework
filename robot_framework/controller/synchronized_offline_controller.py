@@ -46,18 +46,24 @@ class SynchronizedOfflineController(BaseController, Teleoperation):
                 state_update,
             )
 
+            # print(ident, self.system_state.states[ident].small_phase)
+
             if self.system_state.states[ident].small_phase == 0:
+                # print(ident, 'send!')
                 self.communication.send_state(
                     ident,
+                    # self.system_state.states[ident],
                     self.system_state.states[ident].predict(
                         self.small_phase_steps
                         * self.time_delta
                     )
                 )
 
-        self.logger.update(self.current_time, self.system_state)
+        # self.logger.update(self.current_time, self.system_state)
         t = self.current_time
         if abs(t % 1) < 0.001 or 1 - abs(t % 1) < 0.001:
+            print('t =', t)
+            self.logger.update(self.current_time, self.system_state)
             for visualization in self.visualizations:
                 visualization.update(
                     self.system_state.states, self.current_time

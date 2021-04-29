@@ -128,7 +128,7 @@ class DiscretePhaseLogic:
 
 class DiscretePositionLogic:
     def __init__(self, params={}):
-        self.max_speed = 0.2
+        self.max_speed = params.get('max_speed', 0.2)
         self.max_angular_speed = 1
         self.agent_radius = params.get('agent_radius', 0.1)
         self.min_distance = 0.1
@@ -146,6 +146,8 @@ class DiscretePositionLogic:
         self.sync_interaction = params.get('sync_interaction', True)
 
         self.speed_limit = params.get('speed_limit', True)
+
+        self.self_propulsion = params.get('self_propulsion', np.array([0, 0, 0]))
 
     def update_params(self, params):
         self.J = params.get('J', self.J)
@@ -247,8 +249,9 @@ class DiscretePositionLogic:
         speed = min((vel_norm, step_size * vel_norm, max_speed, step_size * max_speed))
 
         vel = vel/vel_norm * speed
+        # print(vel)
 
-        return vel
+        return vel + self.self_propulsion
 
     def update_orientation(self, state, velocity, phases):
         phase = state.phase_level/state.phase_levels_number
@@ -305,7 +308,7 @@ class DiscreteLogic(BaseLogic):
             state = state.predict(
                (
                    self.small_phase_steps
-                   - np.floor(0.5 * self.small_phase_steps)
+                   - small_phase  # np.floor(0.5 * self.small_phase_steps)
                ) * self.time_delta
             )
             if len(positions_and_phases) > 0:

@@ -13,6 +13,7 @@ from mission_manager.client import MissionClient
 class ROSController(BaseController):
     def __init__(self, *args, **kwargs):
         self.node = kwargs.pop('node')
+        self.pos_from_gps = kwargs.get('pos_from_gps', False)
         self.max_speed = 0.2
 
         super(ROSController, self).__init__(
@@ -71,7 +72,10 @@ class ROSController(BaseController):
                 print(self.system_state.states[ident].velocity)
                 self.communication.send_state(
                     ident,
-                    self.system_state.states[ident]
+                    self.system_state.states[ident].predict(
+                        self.small_phase_steps
+                        * self.time_delta
+                    )
                 )
 
         for visualization in self.visualizations:

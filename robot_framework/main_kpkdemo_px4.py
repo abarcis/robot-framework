@@ -58,6 +58,7 @@ def main():
         'orientation_mode': False,
         'constraint_mode': False,
         'attraction_factor': 0.75,
+        'pos_from_gps': True,
     }
     initial_params.update(params_presets[0])
 
@@ -88,6 +89,7 @@ def main():
         sleep_fcn=time.sleep,
         params_list=params_presets,
         time_delta=time_delta,
+        small_phase_steps=small_phase_steps,
         node=node,
     )
 

@@ -17,59 +17,57 @@ from robot_framework.logger.state_log import StateLog
 from robot_framework.utils.get_properties import estimate_radius
 
 import robot_framework.keyboard as keyboard
+import numpy as np
 
 DEFAULT_IDENT = "a{}"
 
 
 def main():
     with keyboard.KeyPoller() as key_poller:
-        random.seed(0)
         agents_num = 12
         ids = [
             DEFAULT_IDENT.format(i) for i in range(agents_num)
         ]
-        period = 0.25
-        small_phase_steps = 2
+        period = 1
+        small_phase_steps = 100
         time_delta = period / small_phase_steps
         initial_params = {
             'phase_levels_number': 24,
             'agent_radius': 0.1,
+            'max_speed': 0.2,
             'min_distance': 0.1,
             'time_delta': time_delta,
             'small_phase_steps': small_phase_steps,
             'orientation_mode': False,
             'constraint_mode': False,
             'reinit': True,
-            'attraction_factor': 0.75,
+            'attraction_factor': 0.75,  # 0.75,
+            'repulsion_factor': 2,  # 2,
+            'sync_interaction': False,
+            'speed_limit': True,
+            'synchronized': True,
+            'self_propulsion': np.array([1, 0, 0]),
         }
 
         params_presets = [
-            {'J': 0.1, 'K': 1, 'M': 1, 'name': "STATIC SYNC", **initial_params},
-            {'J': -1, 'K': 0.2, 'M': 4, 'name': "STATIC ASYNC", **initial_params},
-            {'J': -1, 'K': 0.2, 'M': 3, 'name': "STATIC ASYNC", **initial_params},
-            {'J': 1.4, 'K': 1, 'M': agents_num, 'name': "NEW STATIC PHASE WAVE", **initial_params},
-            {'J': 1.5, 'K': 1, 'M': 6, 'name': "SPLINTERED PHASE WAVE", **initial_params},
-            {'J': 1.5, 'K': 1, 'M': 4, 'name': "SPLINTERED PHASE WAVE", **initial_params},
-            {'J': 1, 'K': -1, 'M': 1, 'name': "ACTIVE PHASE WAVE", **initial_params},
+            {'J': 0, 'K': 0, 'M': 1, 'name': "STATIC SYNC", **initial_params},
         ]
 
         # initial_params.update(params_presets[0])
         initial_params = params_presets[0]
-        print(estimate_radius(agents_num, initial_params['J'],
-                              d=initial_params['agent_radius']))
         logic = DiscreteLogic(initial_params)
         knowledge = SharedKnowledge(ids)
         system_state = SystemState(ids, knowledge, params=initial_params)
         position_feedback = PositionFeedback(system_state, time_delta)
         communication = OfflineCommunication(system_state)
         visualizations = [
-            OrderParamsVisualization(params=initial_params),
+            # OrderParamsVisualization(params=initial_params),
             LiveVisualization(
                 agent_radius=initial_params['agent_radius'],
                 params=initial_params,
             ),
         ]
-        logger = StateLog(initial_params, path='results/log')
+        logger = StateLog(initial_params, path='robot_framework/results/log/swarm/async')
         controller = SynchronizedOfflineController(
             agents_num,
             logic=logic,
@@ -82,11 +80,13 @@ def main():
             key_poller=key_poller,
             teleop_on=True,
             params_list=params_presets,
-            time_delta=time_delta
+            time_delta=time_delta,
+            small_phase_steps=small_phase_steps,
         )
 
         controller.run()
 
 
 if __name__ == "__main__":
+    np.random.seed(0)
     main()
