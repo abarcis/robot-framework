@@ -147,6 +147,8 @@ class DiscretePositionLogic:
 
         self.speed_limit = params.get('speed_limit', True)
 
+        self.self_propulsion = params.get('self_propulsion', np.array([0, 0, 0]))
+
     def update_params(self, params):
         self.J = params.get('J', self.J)
         self.params = params
@@ -257,8 +259,9 @@ class DiscretePositionLogic:
         print('speed', speed)
 
         vel = vel/vel_norm * speed
+        # print(vel)
 
-        return vel
+        return vel + self.self_propulsion
 
     def update_orientation(self, state, velocity, phases):
         phase = state.phase_level/state.phase_levels_number
@@ -315,7 +318,7 @@ class DiscreteLogic(BaseLogic):
             state = state.predict(
                (
                    self.small_phase_steps
-                   - np.floor(0.5 * self.small_phase_steps)
+                   - small_phase  # np.floor(0.5 * self.small_phase_steps)
                ) * self.time_delta
             )
             if len(positions_and_phases) > 0:

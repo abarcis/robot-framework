@@ -49,10 +49,14 @@ class State:
                 self.phase = np.random.random()
             small_period = 1. / self.phase_levels_number
             self.phase_level = int(self.phase / small_period)
-            self.small_phase = 0  # small phases synchronized at the beginning
-            # self.small_phase = (
-            #     phase - self.phase_level * small_period
-            # ) / small_period
+            if params.get('synchronized', True):
+                self.small_phase = 0  # small phases synchronized at the beginning
+                print(self.small_phase)
+            else:
+                small_phase_steps = params.get('small_phase_steps', 10)
+                self.small_phase = np.floor((
+                    self.phase - self.phase_level * small_period
+                ) / small_period * small_phase_steps)
             self.phase_correction = 0
 
             self.orientation = orientation
@@ -80,7 +84,7 @@ class State:
             if velocity is not None:
                 self.velocity = velocity
             else:
-                self.velocity = np.zeros(3)
+                self.velocity = params.get('self_propulsion', np.zeros(3))
 
             self.is_teleoperated = False
 
@@ -169,6 +173,7 @@ class State:
                 state=self,
                 position=self.position + self.velocity * time_delta,
             )
+            # print(time_delta, self.velocity)
         else:
             orient = self.orientation
             vel = orient.rotate(self.velocity)

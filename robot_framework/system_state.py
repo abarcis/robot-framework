@@ -22,7 +22,7 @@ class SystemState:
         states=None,
         positions=None,
         phases=None,
-        params={}
+        params={},
     ):
         self.ids = ids
         self.knowledge = knowledge
