@@ -128,10 +128,10 @@ class DiscretePhaseLogic:
 
 class DiscretePositionLogic:
     def __init__(self, params={}):
-        self.max_speed = 0.2
+        self.max_speed = params.get('max_speed', 0.2)
         self.max_angular_speed = 1
         self.agent_radius = params.get('agent_radius', 0.1)
-        self.min_distance = 0.1
+        self.min_distance = params.get('min_distance', 0.1)
         self.min_speed = 0.01
         # self.step_size = 1/np.abs(1 - 1/self.min_distance)
         self.attraction_factor = params.get('attraction_factor', 0.5)
@@ -160,6 +160,7 @@ class DiscretePositionLogic:
         norm = np.linalg.norm(pos_diffs, axis=1)
         # print('norm', norm)
         min_distance = np.min(norm)
+        print(norm, min_distance)
         max_distance = np.max(norm)
         max_speed = min(
             self.max_speed,
@@ -171,6 +172,11 @@ class DiscretePositionLogic:
         step_size = 1
         if self.speed_limit:
             worst_case_distances = norm - 2 * max_speed * self.time_step
+            print(self.agent_radius, worst_case_distances)
+            print([np.abs(
+                    self.attraction_factor * (1 + self.J) +
+                    self.repulsion_factor/(dist - 2 * self.agent_radius) ** 2
+                ) for dist in worst_case_distances])
 
             max_gradient = 1./N * sum(
                 [np.abs(
@@ -182,7 +188,9 @@ class DiscretePositionLogic:
                 #     self.repulsion_factor/(dist - 2 * self.agent_radius)
                 # ) for dist in distance_range]
             )
+            print(max_gradient)
             step_size = 1. / 2. / max_gradient / self.time_step
+            print(step_size)
 
         attr = np.array([
             norm[j] *
@@ -227,6 +235,7 @@ class DiscretePositionLogic:
         )
         vel[2] = 0  # controlling only XY
         vel_norm = np.linalg.norm(vel)
+        print('vel', vel_norm)
         # critical_distance = (
         #     4 * self.agent_radius * self.attraction_factor +
         #     self.repulsion_factor +
@@ -245,6 +254,7 @@ class DiscretePositionLogic:
 
         # print((vel_norm, step_size * vel_norm, max_speed))
         speed = min((vel_norm, step_size * vel_norm, max_speed, step_size * max_speed))
+        print('speed', speed)
 
         vel = vel/vel_norm * speed
 

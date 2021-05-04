@@ -8,7 +8,7 @@ from .controller.ros_controller import (
     ROSController
 )
 from robot_framework.logic.discrete_sync_and_swarm_logic import DiscreteLogic
-from robot_framework.position_feedback.position_feedback import PositionFeedback
+from robot_framework.position_feedback.px4 import PX4PositionFeedback
 from robot_framework.knowledge.separate_knowledge import SeparateKnowledge
 from robot_framework.communication.ros_communication import ROSCommunication
 from robot_framework.system_state import SystemState
@@ -36,10 +36,11 @@ def main():
         ids = [
             sys.argv[1]
         ]
-    time_delta = 0.125
-    small_phase_steps = 4
+    time_delta = 0.5
+    small_phase_steps = 2
 
     params_presets = [
+        {'J': 0, 'K': 0, 'M': 1, 'name': "SWARMING"},
         {'J': 0.1, 'K': 1, 'M': 1, 'name': "STATIC SYNC"},
         {'J': -1, 'K': 0.25, 'M': 3, 'name': "STATIC ASYNC"},
         {'J': 1, 'K': 0, 'M': 1, 'name': "STATIC PHASE WAVE"},
@@ -51,20 +52,24 @@ def main():
 
     initial_params = {
         'phase_levels_number': 24,
-        'agent_radius': 0.2,
-        'min_distance': 0.1,
+        'agent_radius': 2.5,
+        'min_distance': 1,
         'time_delta': time_delta,
         'small_phase_steps': small_phase_steps,
         'orientation_mode': False,
         'constraint_mode': False,
-        'attraction_factor': 0.75,
+        'attraction_factor': 0.1,
+        'repulsion_factor': 30,
+        'pos_from_gps': True,
+        'phase_interaction': False,
+        'max_speed': 5,
     }
     initial_params.update(params_presets[0])
 
     logic = DiscreteLogic(initial_params)
     knowledge = SeparateKnowledge(ids)
     system_state = SystemState(ids, knowledge, params=initial_params)
-    position_feedback = PositionFeedback(system_state, time_delta)
+    position_feedback = PX4PositionFeedback(system_state, time_delta)
     node = Node('controller')
     communication = ROSCommunication(
         system_state,
@@ -88,7 +93,9 @@ def main():
         sleep_fcn=time.sleep,
         params_list=params_presets,
         time_delta=time_delta,
+        small_phase_steps=small_phase_steps,
         node=node,
+        pos_from_gps=True,
     )
 
     controller.run(

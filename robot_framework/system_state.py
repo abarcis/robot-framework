@@ -10,7 +10,7 @@ def check_if_position_correct(state, states, params):
     other_positions = np.array([s.position for s in states.values()])
     distances = np.linalg.norm(other_positions - position, axis=1)
     return not any(
-        distances < params['agent_radius'] * 2 + params['min_distance'] + 0.1
+        distances < params['agent_radius'] * 2 + params['min_distance'] + 2  #0.1
     )
 
 

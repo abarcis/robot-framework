@@ -13,7 +13,7 @@ class State:
                  received_timestamp=None, sent_timestamp=None,
                  params={}, initialize=True):
         self._angle_xy = None
-        self.area_size = 10
+        self.area_size = params.get('area_size', 10)
         if received_timestamp:
             self.received_timestamp = received_timestamp
         elif state:
@@ -182,6 +182,21 @@ class State:
                 orientation=self.orientation * q,
             )
 
+        return future_state
+
+    def predict_gps(self, time_delta=0):
+        print('predicting with gps')
+        movement = self.velocity * time_delta
+        future_lat = self.position[0] + movement[0] / 111111
+        future_lon = (
+            self.position[1] +
+            movement[1] / (111111 * np.cos(self.position[0] * np.pi / 180))
+        )
+        future_state = State(
+            state=self,
+            position=np.array([future_lat, future_lon, 0]),
+        )
+        # print(time_delta, self.velocity)
         return future_state
 
     def __str__(self):

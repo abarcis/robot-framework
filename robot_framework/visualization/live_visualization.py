@@ -15,6 +15,7 @@ class LiveVisualization(BaseVisualization):
         self.params = params
         self.fig = plt.figure()
         self.plot = None
+        self.area_size = params.get('area_size', 10)
         self.init_axes()
         self.orientation_plot = None
         self.agent_radius = agent_radius
@@ -22,8 +23,8 @@ class LiveVisualization(BaseVisualization):
 
     def init_axes(self):
         self.ax = self.fig.add_subplot(111, projection='3d')
-        self.ax.set_xlim([-5, 5])
-        self.ax.set_ylim([-5, 5])
+        self.ax.set_xlim([-self.area_size/2, self.area_size/2])
+        self.ax.set_ylim([-self.area_size/2, self.area_size/2])
         self.ax.set_zlim([0, 10])
         self.ax.view_init(azim=0, elev=90)
 

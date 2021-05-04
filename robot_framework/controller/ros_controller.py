@@ -8,11 +8,13 @@ import numpy as np
 from .base_controller import BaseController
 from robot_framework.rf_mission_executor import RFMissionExecutor
 from mission_manager.client import MissionClient
+from robot_framework.utils.state_utils import convert_states_to_local, gps_coord_to_dist
 
 
 class ROSController(BaseController):
     def __init__(self, *args, **kwargs):
         self.node = kwargs.pop('node')
+        self.pos_from_gps = kwargs.pop('pos_from_gps', False)
         self.max_speed = 0.2
 
         super(ROSController, self).__init__(
@@ -52,9 +54,17 @@ class ROSController(BaseController):
             if self.system_state.states[ident].position is None:
                 continue
 
+            own_state = self.system_state.states[ident]
+            other_states = self.system_state.knowledge.get_states_except_own(ident)
+            if self.pos_from_gps:
+                own_state, other_states = convert_states_to_local(
+                    own_state=own_state,
+                    other_states=other_states
+                )
+
             state_update = self.logic.update_state(
-                self.system_state.states[ident],
-                self.system_state.knowledge.get_states_except_own(ident)
+                own_state,
+                other_states
             )
 
             self.system_state.states[ident].update(
@@ -68,10 +78,31 @@ class ROSController(BaseController):
                       self.communication.delayed, 'delayed')
                 self.communication.received = 0
                 self.communication.delayed = 0
-                print(self.system_state.states[ident].velocity)
+                if self.pos_from_gps:
+                    predicted_state = self.system_state.states[ident].predict_gps(
+                        self.small_phase_steps
+                        * self.time_delta
+                    )
+                    state = self.system_state.states[ident]
+                    dist1 = np.linalg.norm(
+                        self.system_state.states[ident].velocity * self.small_phase_steps * self.time_delta
+                    )
+                    dist2 = gps_coord_to_dist(
+                        state.position[0],
+                        state.position[1],
+                        predicted_state.position[0],
+                        predicted_state.position[1]
+                    )
+                    print('d1', dist1, 'd2', dist2, 'delta', dist1 - dist2)
+
+                else:
+                    predicted_state = self.system_state.states[ident].predict(
+                        self.small_phase_steps
+                        * self.time_delta
+                    )
                 self.communication.send_state(
                     ident,
-                    self.system_state.states[ident]
+                    predicted_state
                 )
 
         for visualization in self.visualizations:
