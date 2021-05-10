@@ -58,13 +58,13 @@ class PX4Visualization(BaseVisualization):
             self.timestamp_ = msg.timestamp
 
         def timer_callback():
-            if self.offboard_setpoint_counter_ == 10:
-                # Change to Offboard mode after 10 setpoints
-                self._publish_vehicle_command(
-                    VehicleCommand.VEHICLE_CMD_DO_SET_MODE, 1.0, 6.0
-                )
-                # Arm the vehicle
-                self._arm()
+            # if self.offboard_setpoint_counter_ == 10:
+            #     # Change to Offboard mode after 10 setpoints
+            #     self._publish_vehicle_command(
+            #         VehicleCommand.VEHICLE_CMD_DO_SET_MODE, 1.0, 6.0
+            #     )
+            #     # Arm the vehicle
+            #     self._arm()
 
             # Offboard_control_mode needs to be paired with trajectory_setpoint
             self._publish_offboard_control_mode()
