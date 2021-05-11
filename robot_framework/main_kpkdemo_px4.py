@@ -81,7 +81,7 @@ def main():
         PX4Visualization(f"d{ident}")
         for ident in ids
     ]
-    logger = StateLog(initial_params, path='/home/pi/log/')
+    logger = StateLog(initial_params, path='/home/pi/log')
     controller = ROSController(
         0,
         logic=logic,
