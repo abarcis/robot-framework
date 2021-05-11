@@ -106,9 +106,6 @@ class PX4Visualization(BaseVisualization):
         self.offboard_control_mode_publisher_.publish(msg)
 
     '''
-    Publish a trajectory setpoint
-    For this example, it sends a trajectory setpoint to make the
-    vehicle hover at 5 meters with a yaw angle of 180 degrees.
     '''
     def _publish_trajectory_setpoint(self):
         msg = TrajectorySetpoint()
@@ -119,7 +116,7 @@ class PX4Visualization(BaseVisualization):
         msg.vx = float(self.vx)
         msg.vy = float(self.vy)
         msg.vz = 0.0
-        msg.yaw = 0.0
+        msg.yaw = 3.14
 
         self.trajectory_setpoint_publisher_.publish(msg)
 
