@@ -39,7 +39,7 @@ class LiveVisualization(BaseVisualization):
         vmax = 1
         orientations = []
 
-        for state in states.values():
+        for ident, state in states.items():
             x, y, z = state.position
             xs.append(x)
             ys.append(y)
@@ -47,6 +47,7 @@ class LiveVisualization(BaseVisualization):
             positions.append(state.position)
             phases.append(state.phase)
             colors.append(colorsys.hsv_to_rgb(state.phase, 1, 1))
+            # colors.append(colorsys.hsv_to_rgb(int(ident)/len(states.keys()), 1, 1))
             if state.orientation_mode:
                 vec = state.orientation.rotate([0.3, 0, 0])
                 begin = state.position
@@ -98,4 +99,8 @@ class LiveVisualization(BaseVisualization):
                 # self.plot.set_array(np.array(phases))
                 # self.plot.set_3d_properties(zs, 'z')
             # self.fig.canvas.flush_events()
+
+            # uncomment next lines to save figures
+            # frame = int(round(t * self.params['small_phase_steps']))
+            # plt.savefig(f'{path}/{prefix}_{frame:03}.png')
             plt.pause(0.001)

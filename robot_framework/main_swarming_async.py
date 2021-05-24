@@ -19,7 +19,7 @@ from robot_framework.utils.get_properties import estimate_radius
 import robot_framework.keyboard as keyboard
 import numpy as np
 
-DEFAULT_IDENT = "a{}"
+DEFAULT_IDENT = "{}"
 
 
 def main():
@@ -29,10 +29,10 @@ def main():
             DEFAULT_IDENT.format(i) for i in range(agents_num)
         ]
         period = 1
-        small_phase_steps = 100
+        small_phase_steps = 2
         time_delta = period / small_phase_steps
         initial_params = {
-            'phase_levels_number': 24,
+            'phase_levels_number': 12,
             'agent_radius': 0.1,
             'max_speed': 0.2,
             'min_distance': 0.1,
@@ -46,7 +46,7 @@ def main():
             'sync_interaction': False,
             'speed_limit': True,
             'synchronized': True,
-            'self_propulsion': np.array([1, 0, 0]),
+            # 'self_propulsion': np.array([1, 0, 0]),
         }
 
         params_presets = [
@@ -67,7 +67,7 @@ def main():
                 params=initial_params,
             ),
         ]
-        logger = StateLog(initial_params, path='robot_framework/results/log/swarm/async')
+        logger = StateLog(initial_params, path=None)  # 'robot_framework/results/log/swarm/async')
         controller = SynchronizedOfflineController(
             agents_num,
             logic=logic,
@@ -88,5 +88,5 @@ def main():
 
 
 if __name__ == "__main__":
-    np.random.seed(0)
+    np.random.seed(2)
     main()
