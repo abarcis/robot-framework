@@ -19,7 +19,7 @@ class StateLog:
     def save(self):
         if self.path is None:
             return
-        filename = f'{self.path}/{datetime.now()}:J={self.params["J"]},K={self.params["K"]},M={self.params["M"]},T={self.params["time_delta"]}.json'
+        filename = f'{self.path}/{datetime.now()}:J={self.params["J"]},K={self.params["K"]},M={self.params["M"]},T={self.params["time_delta"]*self.params["small_phase_steps"]}.json'
         data = {'states': self.states_log, 'knowledge': self.knowledge_log}
         with open(filename, 'w') as f:
             json.dump(data, f, cls=MyEncoder)

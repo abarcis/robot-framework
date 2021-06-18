@@ -51,7 +51,6 @@ class State:
             self.phase_level = int(self.phase / small_period)
             if params.get('synchronized', True):
                 self.small_phase = 0  # small phases synchronized at the beginning
-                print(self.small_phase)
             else:
                 small_phase_steps = params.get('small_phase_steps', 10)
                 self.small_phase = np.floor((
@@ -167,7 +166,9 @@ class State:
                 self.orientation = new_orientation
             self.position = new_position
 
-    def predict(self, time_delta=0):
+    def predict(self, time_delta=0, pos_from_gps=False):
+        if pos_from_gps:
+            return self.predict_gps(time_delta)
         if not self.constraint_mode:
             future_state = State(
                 state=self,

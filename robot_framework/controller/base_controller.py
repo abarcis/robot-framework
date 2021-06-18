@@ -6,16 +6,17 @@ import random
 
 class BaseController(object):
     PHASE_ORDERING = ('RANDOM', 'LEXICOGRAPHIC', 'ANGLE', 'MODIFY')
+    require_logic = True
 
     def __init__(
         self,
         agents_num,
-        logic,
         position_feedback,
         communication,
         system_state,
         visualizations,
         logger,
+        logic=None,
         params_list=[{}],
         sleep_fcn=None,
         mission_end_callback=None,
@@ -23,7 +24,10 @@ class BaseController(object):
         small_phase_steps=10,
     ):
         self.agents_num = agents_num
-        self.logic = logic
+        if not logic and self.require_logic:
+            raise Exception("No logic provided")
+        if logic:
+            self.logic = logic
         self.position_feedback = position_feedback
         self.time_delta = time_delta
         self.communication = communication

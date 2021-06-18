@@ -61,9 +61,9 @@ class SynchronizedOfflineController(BaseController, Teleoperation):
 
         # self.logger.update(self.current_time, self.system_state)
         t = self.current_time
+        self.logger.update(self.current_time, self.system_state)
         if abs(t % 1) < 0.001 or 1 - abs(t % 1) < 0.001:
             print('t =', t)
-            self.logger.update(self.current_time, self.system_state)
             for visualization in self.visualizations:
                 visualization.update(
                     self.system_state.states, self.current_time

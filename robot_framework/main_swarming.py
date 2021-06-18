@@ -24,28 +24,28 @@ DEFAULT_IDENT = "a{}"
 
 def main():
     with keyboard.KeyPoller() as key_poller:
-        agents_num = 5
+        agents_num = 12
         ids = [
             DEFAULT_IDENT.format(i) for i in range(agents_num)
         ]
-        period = 1.
-        small_phase_steps = 2
+        period = 0.2
+        small_phase_steps = 5
         time_delta = period / small_phase_steps
         initial_params = {
             'phase_levels_number': 24,
-            'agent_radius': 2.5,
-            'min_distance': 1,
+            'agent_radius': 0.1,
+            'min_distance': 0.1,
             'time_delta': time_delta,
             'small_phase_steps': small_phase_steps,
             'orientation_mode': False,
             'constraint_mode': False,
             'reinit': True,
-            'attraction_factor': 0.1,
-            'repulsion_factor': 20,
+            'attraction_factor': 0.75,
+            'repulsion_factor': 2,
             'speed_limit': True,
             'sync_interaction': False,
-            'area_size': 100,
-            'max_speed': 2,
+            'area_size': 10,
+            'max_speed': 0.2,
             'synchronized': True,
         }
 
@@ -67,7 +67,7 @@ def main():
                 params=initial_params,
             ),
         ]
-        logger = StateLog(initial_params, path='robot_framework/results/log/swarm')
+        logger = StateLog(initial_params, path='robot_framework/results/log/swarm/final')
         controller = SynchronizedOfflineController(
             agents_num,
             logic=logic,

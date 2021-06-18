@@ -24,7 +24,7 @@ DEFAULT_IDENT = "a{}"
 
 def main():
     with keyboard.KeyPoller() as key_poller:
-        agents_num = 12
+        agents_num = 15
         ids = [
             DEFAULT_IDENT.format(i) for i in range(agents_num)
         ]
@@ -46,7 +46,7 @@ def main():
             'sync_interaction': False,
             'speed_limit': True,
             'synchronized': True,
-            'self_propulsion': np.array([1, 0, 0]),
+            # 'self_propulsion': np.array([1, 0, 0]),
         }
 
         params_presets = [

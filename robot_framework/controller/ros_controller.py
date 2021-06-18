@@ -15,7 +15,6 @@ class ROSController(BaseController):
     def __init__(self, *args, **kwargs):
         self.node = kwargs.pop('node')
         self.pos_from_gps = kwargs.pop('pos_from_gps', False)
-        self.max_speed = 0.2
 
         super(ROSController, self).__init__(
             *args, **kwargs
@@ -78,28 +77,10 @@ class ROSController(BaseController):
                       self.communication.delayed, 'delayed')
                 self.communication.received = 0
                 self.communication.delayed = 0
-                if self.pos_from_gps:
-                    predicted_state = self.system_state.states[ident].predict_gps(
-                        self.small_phase_steps
-                        * self.time_delta
-                    )
-                    state = self.system_state.states[ident]
-                    dist1 = np.linalg.norm(
-                        self.system_state.states[ident].velocity * self.small_phase_steps * self.time_delta
-                    )
-                    dist2 = gps_coord_to_dist(
-                        state.position[0],
-                        state.position[1],
-                        predicted_state.position[0],
-                        predicted_state.position[1]
-                    )
-                    print('d1', dist1, 'd2', dist2, 'delta', dist1 - dist2)
-
-                else:
-                    predicted_state = self.system_state.states[ident].predict(
-                        self.small_phase_steps
-                        * self.time_delta
-                    )
+                predicted_state = self.system_state.states[ident].predict(
+                    self.small_phase_steps * self.time_delta,
+                    pos_from_gps=self.pos_from_gps
+                )
                 self.communication.send_state(
                     ident,
                     predicted_state
