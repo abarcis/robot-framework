@@ -22,9 +22,14 @@ class RFMissionExecutor(Node, MissionExecutor):
         self.controller.stop()
 
     def change_params(self, params, timestamp):
+        print(params)
         for k, p in params.items():
             if k == 'M':
                 params[k] = int(p)
+            elif k == 'collaborators':
+                params[k] = list(p.split(':'))
+            elif k == 'goal':
+                params[k] = [float(coord) for coord in p.split(':')]
             else:
                 params[k] = float(p)
         self.get_logger().info(

@@ -28,8 +28,15 @@ class ROSControllerWithSubsets(ROSController):
         }
 
     def update_params(self, params):
+        collaborators = params.get('collaborators', None)
         for ident, logic in self.logics.items():
-            logic.update_params(params)
+            if not collaborators or ident in collaborators:
+                new_params = params.copy()
+                new_params['collaborators'] = params['collaborators'].copy()
+                if collaborators:
+                    new_params['collaborators'].remove(ident)
+                print(ident, new_params)
+                logic.update_params(new_params)
 
     def update(self, *args):
         for ident in self.system_state.ids:
@@ -72,8 +79,8 @@ class ROSControllerWithSubsets(ROSController):
             if self.system_state.states[ident].small_phase == 0:
                 # print(self.communication.received, 'received messages,',
                 #       self.communication.delayed, 'delayed')
-                self.communication.received = 0
-                self.communication.delayed = 0
+                #self.communication.received = 0
+                #self.communication.delayed = 0
                 predicted_state = self.system_state.states[ident].predict(
                     self.small_phase_steps * self.time_delta,
                     pos_from_gps=self.pos_from_gps
