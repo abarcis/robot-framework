@@ -25,6 +25,7 @@ from robot_framework.logger.state_log import StateLog
 
 import rclpy
 import sys
+import numpy as np
 
 import socket
 
@@ -33,6 +34,7 @@ DEFAULT_IDENT = "a{}"
 
 def main():
     rclpy.init()
+    np.random.seed(1)
     agents_num = 5
     ids = [
         f'{agent}' for agent in range(1, agents_num+1)

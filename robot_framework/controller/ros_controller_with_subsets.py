@@ -30,12 +30,11 @@ class ROSControllerWithSubsets(ROSController):
     def update_params(self, params):
         collaborators = params.get('collaborators', None)
         for ident, logic in self.logics.items():
-            if not collaborators or ident in collaborators:
+            if collaborators is None or ident in collaborators:
                 new_params = params.copy()
                 new_params['collaborators'] = params['collaborators'].copy()
                 if collaborators:
                     new_params['collaborators'].remove(ident)
-                print(ident, new_params)
                 logic.update_params(new_params)
 
     def update(self, *args):

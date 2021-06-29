@@ -48,19 +48,19 @@ class SandsbotsPositionWithSubsetsLogic:
         # else repulsion
         # sum state updates
         position = state.position
-        N = len(self.collaborators)
+        N = len(self.collaborators) + 1
 
         positions_collaborators = np.array([
             s.position for ident, s in states.items()
             if s.position is not None and (
-                not self.collaborators
+                self.collaborators is None
                 or ident in self.collaborators
             )
         ])
         phases_collaborators = np.array([
             s.phase for ident, s in states.items()
             if s.position is not None and (
-                not self.collaborators
+                self.collaborators is None
                 or ident in self.collaborators
             )
         ])
@@ -74,85 +74,96 @@ class SandsbotsPositionWithSubsetsLogic:
             )
         ])
 
-        pos_diffs_collaborators = positions_collaborators - position
-        pos_diffs_others = positions_others - position
-        norm_collaborators = np.linalg.norm(pos_diffs_collaborators, axis=1)
-        norm_others = np.linalg.norm(pos_diffs_others, axis=1)
-        norm_others_filtered = norm_others[norm_others < self.repulsion_range]
-        pos_diffs_others_filtered = pos_diffs_others[
-            norm_others < self.repulsion_range
-        ]
-        min_distance = np.min(norm_collaborators)
-        max_speed = min(
-            self.max_speed,
-            max(
-                min_distance - self.agent_radius * 2 - self.min_distance,
-                0.0001
-            ) / (4 * self.time_step)
-        )
+        rep_others = np.zeros(3)
+        attr = np.zeros(3)
+        rep = np.zeros(3)
         step_size = 1
-        if self.speed_limit:
-            worst_case_distances = (
-                norm_collaborators - 2 * max_speed * self.time_step
-            )
+        max_speed = self.max_speed
 
-            max_gradient = 1./N * sum(
-                [np.abs(
-                    self.attraction_factor * (1 + self.J) +
-                    self.repulsion_factor/(dist - 2 * self.agent_radius) ** 2
-                ) for dist in worst_case_distances]
+        if len(positions_collaborators):
+            pos_diffs_collaborators = positions_collaborators - position
+            norm_collaborators = np.linalg.norm(pos_diffs_collaborators, axis=1)
+            min_distance = np.min(norm_collaborators)
+            max_speed = min(
+                self.max_speed,
+                max(
+                    min_distance - self.agent_radius * 2 - self.min_distance,
+                    0.0001
+                ) / (4 * self.time_step)
             )
-            step_size = 1. / 2. / max_gradient / self.time_step
+            step_size = 1
+            if self.speed_limit:
+                worst_case_distances = (
+                    norm_collaborators - 2 * max_speed * self.time_step
+                )
 
-        attr = np.array([
-            norm_collaborators[j] *
-            pos_diffs_collaborators[j]/norm_collaborators[j]
-            for j in range(len(norm_collaborators))
-        ]) * self.attraction_factor
-        if self.sync_interaction:
-            phase = float(state.phase_level)/state.phase_levels_number
-            phase_potential = potential_M_N(
-                self.params['K'],
-                self.params['M'],
-                states=None,
-                phases=[
-                    float(p)/state.phase_levels_number
+                max_gradient = 1./N * sum(
+                    [np.abs(
+                        self.attraction_factor * (1 + self.J) +
+                        self.repulsion_factor/(dist - 2 * self.agent_radius) ** 2
+                    ) for dist in worst_case_distances]
+                )
+                step_size = 1. / 2. / max_gradient / self.time_step
+
+            attr = np.array([
+                norm_collaborators[j] *
+                pos_diffs_collaborators[j]/norm_collaborators[j]
+                for j in range(len(norm_collaborators))
+            ]) * self.attraction_factor
+            if self.sync_interaction:
+                phase = float(state.phase_level)/state.phase_levels_number
+                phase_potential = potential_M_N(
+                    self.params['K'],
+                    self.params['M'],
+                    states=None,
+                    phases=[
+                        float(p)/state.phase_levels_number
+                        for p in phases_collaborators
+                    ] + [phase],
+                )
+
+                if self.speed_limit and self.sync_interaction:
+                    step_size *= (1 - phase_potential**(1./self.params['M']))
+                phase_diffs = [
+                    (
+                        (float(p)/state.phase_levels_number) -
+                        phase
+                    ) * 2 * np.pi
                     for p in phases_collaborators
-                ] + [phase],
-            )
+                ]
+                F = np.transpose((1 + self.J * np.cos(phase_diffs))[np.newaxis])
 
-            if self.speed_limit and self.sync_interaction:
-                step_size *= (1 - phase_potential**(1./self.params['M']))
-            phase_diffs = [
-                (
-                    (float(p)/state.phase_levels_number) -
-                    phase
-                ) * 2 * np.pi
-                for p in phases_collaborators
+                attr = np.multiply(attr, F)
+            rep = np.array([
+                pos_diffs_collaborators[j]/(
+                    max(
+                        norm_collaborators[j] - self.agent_radius * 2,
+                        self.min_distance
+                    ) * norm_collaborators[j]
+                )
+                for j in range(len(norm_collaborators))
+            ]) * self.repulsion_factor
+        if len(positions_others):
+            pos_diffs_others = positions_others - position
+            norm_others = np.linalg.norm(pos_diffs_others, axis=1)
+            norm_others_filtered = norm_others[norm_others < self.repulsion_range]
+            pos_diffs_others_filtered = pos_diffs_others[
+                norm_others < self.repulsion_range
             ]
-            F = np.transpose((1 + self.J * np.cos(phase_diffs))[np.newaxis])
-
-            attr = np.multiply(attr, F)
-        rep = np.array([
-            pos_diffs_collaborators[j]/(
-                max(
-                    norm_collaborators[j] - self.agent_radius * 2,
-                    self.min_distance
-                ) * norm_collaborators[j]
-            )
-            for j in range(len(norm_collaborators))
-        ]) * self.repulsion_factor
-        rep_others = np.sum(np.array([
-            pos_diffs_others_filtered[j]/(
-                max(
-                    norm_others_filtered[j] - self.agent_radius * 2, self.min_distance
-                ) * norm_others_filtered[j]
-            )
-            for j in range(len(norm_others_filtered))
-        ]) * self.repulsion_factor, axis=0)
+            rep_others = np.sum(np.array([
+                pos_diffs_others_filtered[j]/(
+                    max(
+                        norm_others_filtered[j] - self.agent_radius * 2, self.min_distance
+                    ) * norm_others_filtered[j]
+                )
+                for j in range(len(norm_others_filtered))
+            ]) * self.repulsion_factor, axis=0)
         goal_attr = 0
         if self.goal is not None:
-            goal_attr = 0.5 * (self.goal - position)
+            goal_diff = self.goal - position
+            goal_dist = np.linalg.norm(goal_diff)
+            print(goal_dist)
+            goal_attr = goal_diff * (0.5 - 0.1 / goal_dist**2)
         vel = 1./N * np.sum(attr - rep, axis=0) - rep_others + goal_attr
         vel[2] = 0  # controlling only XY
         vel_norm = np.linalg.norm(vel)
