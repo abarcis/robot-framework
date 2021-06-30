@@ -97,11 +97,11 @@ class ROSController(BaseController):
     def run(self, additional_nodes=[]):
         ros_nodes = []
         try:
-            rf_executor = RFMissionExecutor(self)
+            self.rf_executor = RFMissionExecutor(self)
             mission_client = MissionClient()
-            mission_client.add_mission_executor(rf_executor)
+            mission_client.add_mission_executor(self.rf_executor)
 
-            ros_nodes += [rf_executor, mission_client, self.node]
+            ros_nodes += [self.rf_executor, mission_client, self.node]
 
             if self.position_feedback.get_node() is not None:
                 ros_nodes.append(self.position_feedback.get_node())

@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+import numpy as np
+
 from robot_framework.controller.ros_controller import ROSController
 from robot_framework.utils.state_utils import convert_states_to_local
 
@@ -11,8 +13,6 @@ class ROSControllerWithSubsets(ROSController):
         logic_class = kwargs.pop('logic_class')
         initial_params = kwargs.pop('initial_params')
         super().__init__(*args, **kwargs)
-
-        # testing only, remove once done!!!!!
 
         self.logics = {
             ident: logic_class(initial_params)
@@ -28,6 +28,20 @@ class ROSControllerWithSubsets(ROSController):
                 if collaborators:
                     new_params['collaborators'].remove(ident)
                 logic.update_params(new_params)
+
+    def pattern_formed(self, ident):
+        if self.logics[ident].collaborators is None or not self.logics[ident].position_logic.started:
+            return False
+        if self.logics[ident].collaborators is not None:
+            vel = self.system_state.states[ident].velocity
+            speed = np.linalg.norm(vel)
+            if speed < 0.1 * self.logics[ident].params.get('agent_radius', 0.1):
+                return True
+        return False
+
+    def task_finished(self, ident):
+        self.logics[ident].collaborators = None
+        self.rf_executor.report_progress(f"{ident}:done")
 
     def update(self, *args):
         for ident in self.system_state.ids:
@@ -80,6 +94,8 @@ class ROSControllerWithSubsets(ROSController):
                     ident,
                     predicted_state
                 )
+                if self.pattern_formed(ident):
+                    self.task_finished(ident)
 
         for visualization in self.visualizations:
             visualization.update(

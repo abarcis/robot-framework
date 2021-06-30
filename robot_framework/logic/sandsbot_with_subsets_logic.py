@@ -36,8 +36,10 @@ class SandsbotsPositionWithSubsetsLogic:
 
         self.speed_limit = params.get('speed_limit', True)
         self.repulsion_range = params.get('repulsion_range', None)
+        self.started = False
 
     def update_params(self, params={}):
+        self.started = False
         self.collaborators = params.get('collaborators', None)
         new_goal = params.get('goal', None)
         if new_goal is not None:
@@ -45,9 +47,6 @@ class SandsbotsPositionWithSubsetsLogic:
         self.goal = new_goal
 
     def update_position(self, state, states):
-        # if collaborators: DiscreteLogic(collaborators)
-        # else repulsion
-        # sum state updates
         position = state.position
 
         positions_collaborators = np.array([
@@ -83,6 +82,7 @@ class SandsbotsPositionWithSubsetsLogic:
         max_speed = self.max_speed
 
         if len(positions_collaborators):
+            self.started = True
             pos_diffs_collaborators = positions_collaborators - position
             norm_collaborators = np.linalg.norm(pos_diffs_collaborators, axis=1)
             min_distance = np.min(norm_collaborators)
