@@ -162,7 +162,7 @@ class SandsbotsPositionWithSubsetsLogic:
         if self.goal is not None:
             goal_diff = self.goal - position
             goal_dist = np.linalg.norm(goal_diff)
-            print(goal_dist)
+            # print(goal_dist)
             goal_attr = goal_diff * (0.5 - 0.1 / goal_dist**2)
         vel = 1./N * np.sum(attr - rep, axis=0) - rep_others + goal_attr
         vel[2] = 0  # controlling only XY
@@ -177,6 +177,15 @@ class SandsbotsPositionWithSubsetsLogic:
         vel = vel/vel_norm * speed
 
         return vel
+
+    def update_orientation(self, state):
+        if self.goal is not None:
+            goal_diff = self.goal - state.position
+            angle = np.arctan2(goal_diff[1], goal_diff[0])
+            angle_diff = np.sin(angle-state.angle_xy)
+            angular_speed = angle_diff / self.time_step * 0.5
+            return angular_speed
+        return 0
 
 
 class SandsbotWithSubsetsLogic(BaseLogic):
@@ -231,6 +240,11 @@ class SandsbotWithSubsetsLogic(BaseLogic):
                 self.velocity_updates[ident] = self.position_logic.update_position(
                     state, states
                 )
+            self.angular_speed_updates[ident] = (
+                self.position_logic.update_orientation(
+                    state,
+                )
+            )
             if len(positions_and_phases) > 0:
                 positions, phases = zip(*positions_and_phases)
                 positions = np.array(positions)

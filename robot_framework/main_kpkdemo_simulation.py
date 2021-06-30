@@ -59,7 +59,7 @@ def main():
         'min_distance': 0.1,
         'time_delta': time_delta,
         'small_phase_steps': small_phase_steps,
-        'orientation_mode': False,
+        'orientation_mode': True,
         'constraint_mode': False,
         'attraction_factor': 0.75,
         'repulsion_factor': 2,
