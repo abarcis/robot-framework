@@ -67,6 +67,8 @@ def main():
         'phase_interaction': False,
         'max_speed': 0.2,
         'repulsion_range': 1,
+        'task_execution_time': 5,
+        'task_execution_speed': 0.1,
     }
     initial_params.update(params_presets[0])
 

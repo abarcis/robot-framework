@@ -36,7 +36,9 @@ class SandsbotsPositionWithSubsetsLogic:
 
         self.speed_limit = params.get('speed_limit', True)
         self.repulsion_range = params.get('repulsion_range', None)
+        self.task_execution_speed = params.get('task_execution_speed', 0.1)
         self.started = False
+        self.rotate = False
 
     def update_params(self, params={}):
         self.started = False
@@ -79,6 +81,7 @@ class SandsbotsPositionWithSubsetsLogic:
         attr = np.zeros(3)
         rep = np.zeros(3)
         step_size = 1
+        rotation_vel = np.zeros(3)
         max_speed = self.max_speed
 
         if len(positions_collaborators):
@@ -165,8 +168,20 @@ class SandsbotsPositionWithSubsetsLogic:
             goal_diff = self.goal - position
             goal_dist = np.linalg.norm(goal_diff)
             # print(goal_dist)
-            goal_attr = goal_diff * (0.5 - 0.1 / goal_dist**2)
-        vel = 1./N * np.sum(attr - rep, axis=0) - rep_others + goal_attr
+            goal_attr = goal_diff * 0.5
+            if self.collaborators == []:
+                goal_attr -= goal_diff * 0.1 / goal_dist**2
+            if self.rotate:
+                x, y, _ = goal_diff
+                radians = -np.pi/2
+                rotation_vector = np.array([
+                    x * np.cos(radians) + y * np.sin(radians),
+                    -x * np.sin(radians) + y * np.cos(radians),
+                    0
+                ])
+                rotation_norm = np.linalg.norm(rotation_vector)
+                rotation_vel = rotation_vector / rotation_norm * self.task_execution_speed
+        vel = 1./N * np.sum(attr - rep, axis=0) - rep_others + goal_attr + rotation_vel
         vel_norm = np.linalg.norm(vel)
         if vel_norm > 0:
             speed = min((
@@ -207,6 +222,7 @@ class SandsbotWithSubsetsLogic(BaseLogic):
         self.phase_levels_number = params.get('phase_levels_number', 1)
         self.small_phase_steps = params.get('small_phase_steps', 10)
         self.time_delta = params.get('time_delta', 0.1)
+        self.task_execution_speed = params.get('task_execution_speed', 0.1)
         self.params = params
         self.update_params(params)
 

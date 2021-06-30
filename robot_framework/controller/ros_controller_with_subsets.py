@@ -12,12 +12,14 @@ class ROSControllerWithSubsets(ROSController):
     def __init__(self, *args, **kwargs):
         logic_class = kwargs.pop('logic_class')
         initial_params = kwargs.pop('initial_params')
+        self.task_execution_time = initial_params.get('task_execution_time', 5)
         super().__init__(*args, **kwargs)
 
         self.logics = {
             ident: logic_class(initial_params)
             for ident in self.system_state.states.keys()
         }
+        self.execution_timers = {}
 
     def update_params(self, params):
         collaborators = params.get('collaborators', None)
@@ -40,8 +42,14 @@ class ROSControllerWithSubsets(ROSController):
         return False
 
     def task_finished(self, ident):
-        self.logics[ident].collaborators = None
-        self.rf_executor.report_progress(f"{ident}:done")
+        def task_finished_callback():
+            self.logics[ident].update_params({
+                'collaborators': None,
+                'goal': None,
+            })
+            self.rf_executor.report_progress(f"{ident}:done")
+            self.execution_timers[ident].destroy()
+        return task_finished_callback
 
     def update(self, *args):
         for ident in self.system_state.ids:
@@ -94,8 +102,13 @@ class ROSControllerWithSubsets(ROSController):
                     ident,
                     predicted_state
                 )
-                if self.pattern_formed(ident):
-                    self.task_finished(ident)
+                if self.pattern_formed(ident) and self.execution_timers.get(ident) is None:
+                    print(ident, "pattern formed")
+                    self.logics[ident].position_logic.rotate = True
+                    self.execution_timers[ident] = self.node.create_timer(
+                        self.task_execution_time,
+                        self.task_finished(ident)
+                    )
 
         for visualization in self.visualizations:
             visualization.update(
