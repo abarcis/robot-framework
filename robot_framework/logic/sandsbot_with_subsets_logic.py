@@ -49,20 +49,21 @@ class SandsbotsPositionWithSubsetsLogic:
         # else repulsion
         # sum state updates
         position = state.position
-        N = len(states) + 1
 
         positions_collaborators = np.array([
             s.position for ident, s in states.items()
             if s.position is not None and (
-                self.collaborators is None
-                or ident in self.collaborators
+                self.collaborators is not None
+                and ident in self.collaborators
             )
         ])
+        N = len(positions_collaborators) + 1
+
         phases_collaborators = np.array([
             s.phase for ident, s in states.items()
             if s.position is not None and (
-                self.collaborators is None
-                or ident in self.collaborators
+                self.collaborators is not None
+                and ident in self.collaborators
             )
         ])
 
@@ -70,8 +71,8 @@ class SandsbotsPositionWithSubsetsLogic:
             s.position for ident, s in states.items()
             if s.position is not None
             and (
-                self.collaborators
-                and ident not in self.collaborators
+                self.collaborators is None
+                or ident not in self.collaborators
             )
         ])
 
@@ -166,16 +167,19 @@ class SandsbotsPositionWithSubsetsLogic:
             # print(goal_dist)
             goal_attr = goal_diff * (0.5 - 0.1 / goal_dist**2)
         vel = 1./N * np.sum(attr - rep, axis=0) - rep_others + goal_attr
-        vel[2] = 0  # controlling only XY
         vel_norm = np.linalg.norm(vel)
-        speed = min((
-            vel_norm,
-            step_size * vel_norm,
-            max_speed,
-            step_size * max_speed)
-        )
+        if vel_norm > 0:
+            speed = min((
+                vel_norm,
+                step_size * vel_norm,
+                max_speed,
+                step_size * max_speed)
+            )
 
-        vel = vel/vel_norm * speed
+            vel = vel/vel_norm * speed
+        else:
+            vel = np.zeros(3)
+        vel[2] = 0  # controlling only XY
 
         return vel
 
@@ -228,7 +232,7 @@ class SandsbotWithSubsetsLogic(BaseLogic):
                 for ident2, s in states.items()
                 if s and s.position is not None
                 and (
-                    self.collaborators is None or
+                    self.collaborators is not None and
                     ident2 in self.collaborators
                 )
             ]
