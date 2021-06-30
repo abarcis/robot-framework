@@ -42,6 +42,7 @@ class PX4Visualization(BaseVisualization):
         self.node = Node('px4_visualization', namespace=namespace)
         self.timestamp_ = 0
         self.vx, self.vy, self.vz = (0, 0, 0)
+        self.yaw = 3.14
 
         self.offboard_control_mode_publisher_ = self.node.create_publisher(
             OffboardControlMode, 'OffboardControlMode_PubSubTopic', 10
@@ -89,6 +90,7 @@ class PX4Visualization(BaseVisualization):
         assert len(states) == 1
         for state in states.values():
             self.vx, self.vy, self.vz = state.velocity
+            self.yaw = state.angle_xy
 
     '''
     Publish the offboard control mode.
@@ -116,7 +118,7 @@ class PX4Visualization(BaseVisualization):
         msg.vx = float(self.vx)
         msg.vy = float(self.vy)
         msg.vz = 0.0
-        msg.yaw = 3.14
+        msg.yaw = self.yaw
 
         self.trajectory_setpoint_publisher_.publish(msg)
 
