@@ -13,6 +13,7 @@ from robot_framework.logic.discrete_sync_and_swarm_logic import (
 )
 from robot_framework.utils.order_parameters import potential_M_N
 from .state_update import StateUpdate
+from pyquaternion import Quaternion
 
 
 class SandsbotsPositionWithSubsetsLogic:
@@ -48,7 +49,7 @@ class SandsbotsPositionWithSubsetsLogic:
         # else repulsion
         # sum state updates
         position = state.position
-        N = len(self.collaborators) + 1
+        N = len(states) + 1
 
         positions_collaborators = np.array([
             s.position for ident, s in states.items()
@@ -182,10 +183,11 @@ class SandsbotsPositionWithSubsetsLogic:
         if self.goal is not None:
             goal_diff = self.goal - state.position
             angle = np.arctan2(goal_diff[1], goal_diff[0])
-            angle_diff = np.sin(angle-state.angle_xy)
-            angular_speed = angle_diff / self.time_step * 0.5
-            return angular_speed
-        return 0
+            # angle_diff = np.sin(angle-state.angle_xy)
+            # angular_speed = angle_diff / self.time_step * 0.5
+            quaternion = Quaternion(axis=[0, 0, 1], angle=angle)
+            return quaternion
+        return Quaternion(axis=[0, 0, 1], angle=3.14)
 
 
 class SandsbotWithSubsetsLogic(BaseLogic):
@@ -196,7 +198,7 @@ class SandsbotWithSubsetsLogic(BaseLogic):
             params
         )
         self.velocity_updates = {}
-        self.angular_speed_updates = {}
+        self.orientation_updates = {}
         self.phase_level_deltas = {}
         self.phase_levels_number = params.get('phase_levels_number', 1)
         self.small_phase_steps = params.get('small_phase_steps', 10)
@@ -214,7 +216,7 @@ class SandsbotWithSubsetsLogic(BaseLogic):
 
     def update_state(self, state, states, ident=None):
         velocity_update = None
-        angular_speed_update = None
+        orientation_update = None
         phase_updates = self.phase_logic.update_phase(
             state,
         )
@@ -240,7 +242,7 @@ class SandsbotWithSubsetsLogic(BaseLogic):
                 self.velocity_updates[ident] = self.position_logic.update_position(
                     state, states
                 )
-            self.angular_speed_updates[ident] = (
+            self.orientation_updates[ident] = (
                 self.position_logic.update_orientation(
                     state,
                 )
@@ -261,7 +263,7 @@ class SandsbotWithSubsetsLogic(BaseLogic):
 
         if small_phase == 0:
             velocity_update = self.velocity_updates.pop(ident, None)
-            angular_speed_update = self.angular_speed_updates.pop(ident, None)
+            orientation_update = self.orientation_updates.pop(ident, None)
             phase_updates["phase_level"] = (
                 phase_updates["phase_level"] +
                 self.phase_level_deltas.pop(ident, 0)
@@ -269,7 +271,7 @@ class SandsbotWithSubsetsLogic(BaseLogic):
 
         state_update = StateUpdate(
             velocity_update=velocity_update,
-            angular_speed_update=angular_speed_update,
+            orientation_update=orientation_update,
             phase_level_update=phase_updates["phase_level"],
             small_phase_update=phase_updates["small_phase"],
             phase_correction_update=phase_updates.pop("phase_correction", None)

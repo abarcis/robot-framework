@@ -13,17 +13,9 @@ class ROSControllerWithSubsets(ROSController):
         super().__init__(*args, **kwargs)
 
         # testing only, remove once done!!!!!
-        import numpy as np
-        collaborators_and_goals = {
-            '1': {'collaborators': ['2', '3'], 'goal': np.array([0, 0, 0])},
-            '2': {'collaborators': ['1', '3'], 'goal': np.array([0, 0, 0])},
-            '3': {'collaborators': ['2', '1'], 'goal': np.array([0, 0, 0])},
-            '4': {'collaborators': ['5'], 'goal': np.array([3, 3, 0])},
-            '5': {'collaborators': ['4'], 'goal': np.array([3, 3, 0])},
-        }
 
         self.logics = {
-            ident: logic_class({**initial_params, **collaborators_and_goals[ident]})
+            ident: logic_class(initial_params)
             for ident in self.system_state.states.keys()
         }
 
