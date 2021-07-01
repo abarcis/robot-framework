@@ -26,6 +26,9 @@ class ROSControllerWithSubsets(ROSController):
         collaborators = params.get('collaborators', None)
         for ident, logic in self.logics.items():
             if collaborators is None or ident in collaborators:
+                if self.execution_timers.get(ident):
+                    self.node.destroy_timer(self.execution_timers[ident])
+                    self.execution_timers[ident] = None
                 new_params = params.copy()
                 new_params['collaborators'] = params['collaborators'].copy()
                 if collaborators:
@@ -36,13 +39,29 @@ class ROSControllerWithSubsets(ROSController):
         if self.logics[ident].collaborators is None or not self.logics[ident].position_logic.started:
             return False
         if self.logics[ident].collaborators is not None:
+            positions = np.array(
+                [self.system_state.states[ident].position] +
+                [self.system_state.states[i].position for i in self.logics[ident].collaborators]
+            )
+            centroid = np.mean(positions, axis=0)
+            dist_from_goal = np.linalg.norm(
+                self.logics[ident].position_logic.goal - centroid
+            )
             vel = self.system_state.states[ident].velocity
             speed = np.linalg.norm(vel)
+            minval = 0.1 * self.logics[ident].params.get('agent_radius', 0.1)
             if (
-                self.logics[ident].position_logic.rotate or
-                speed < 0.1 * self.logics[ident].params.get('agent_radius', 0.1)
+                dist_from_goal < minval and
+                (speed < minval or self.logics[ident].position_logic.rotate)
             ):
                 return True
+            # vel = self.system_state.states[ident].velocity
+            # speed = np.linalg.norm(vel)
+            # if (
+            #     self.logics[ident].position_logic.rotate or
+            #     speed < 0.1 * self.logics[ident].params.get('agent_radius', 0.1)
+            # ):
+            #     return True
         return False
 
     def task_finished(self, ident):
@@ -51,9 +70,9 @@ class ROSControllerWithSubsets(ROSController):
                 'collaborators': None,
                 'goal': None,
             })
-            self.rf_executor.report_progress(f"{ident}:done")
-            self.execution_timers[ident].destroy()
+            self.node.destroy_timer(self.execution_timers[ident])
             self.execution_timers[ident] = None
+            self.rf_executor.report_progress(f"{ident}:done")
         return task_finished_callback
 
     def take_picture_callback(self):
