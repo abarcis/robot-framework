@@ -13,6 +13,7 @@ class ROSControllerWithSubsets(ROSController):
         logic_class = kwargs.pop('logic_class')
         initial_params = kwargs.pop('initial_params')
         self.task_execution_time = initial_params.get('task_execution_time', 5)
+        self.camera_interface = kwargs.pop('camera_interface', None)
         super().__init__(*args, **kwargs)
 
         self.logics = {
@@ -37,7 +38,10 @@ class ROSControllerWithSubsets(ROSController):
         if self.logics[ident].collaborators is not None:
             vel = self.system_state.states[ident].velocity
             speed = np.linalg.norm(vel)
-            if speed < 0.1 * self.logics[ident].params.get('agent_radius', 0.1):
+            if (
+                self.logics[ident].position_logic.rotate or
+                speed < 0.1 * self.logics[ident].params.get('agent_radius', 0.1)
+            ):
                 return True
         return False
 
@@ -51,6 +55,12 @@ class ROSControllerWithSubsets(ROSController):
             self.execution_timers[ident].destroy()
             self.execution_timers[ident] = None
         return task_finished_callback
+
+    def take_picture_callback(self):
+        print("Taking picture")
+        if self.camera_interface:
+            image = self.camera_interface.take_picture()
+            self.camera_interface.save_picture(image)
 
     def update(self, *args):
         for ident in self.system_state.ids:
@@ -103,13 +113,15 @@ class ROSControllerWithSubsets(ROSController):
                     ident,
                     predicted_state
                 )
-                if self.pattern_formed(ident) and self.execution_timers.get(ident) is None:
-                    print(ident, "pattern formed")
-                    self.logics[ident].position_logic.rotate = True
-                    self.execution_timers[ident] = self.node.create_timer(
-                        self.task_execution_time,
-                        self.task_finished(ident)
-                    )
+                if self.pattern_formed(ident):
+                    if self.execution_timers.get(ident) is None:
+                        print(ident, "pattern formed")
+                        self.logics[ident].position_logic.rotate = True
+                        self.execution_timers[ident] = self.node.create_timer(
+                            self.task_execution_time,
+                            self.task_finished(ident)
+                        )
+                    self.take_picture_callback()
 
         for visualization in self.visualizations:
             visualization.update(

@@ -22,7 +22,6 @@ class RFMissionExecutor(Node, MissionExecutor):
         self.controller.stop()
 
     def change_params(self, params, timestamp):
-        print(params)
         for k, p in params.items():
             if k == 'M':
                 params[k] = int(p)
@@ -36,3 +35,6 @@ class RFMissionExecutor(Node, MissionExecutor):
             'Changing parameters to {}'.format(params)
         )
         self.controller.update_params(params)
+
+    def progress_reported(self, progress):
+        print("PROGRESS: ", progress)
