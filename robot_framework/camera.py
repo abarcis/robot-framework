@@ -31,8 +31,8 @@ class Camera:
         if frame is None:
             raise Exception('Image cannot be retrieved. Disconnected camera?')
         # frame = cv2.resize(frame, (320, 240))
-        jpg = bytearray(cv2.imencode('.jpg', frame)[1])
-        return jpg
+        # jpg = bytearray(cv2.imencode('.jpg', frame)[1])
+        return frame
 
     def save_picture(self, image):
         cv2.imwrite(f'{self.path}/{datetime.now()}.jpg', image)

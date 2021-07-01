@@ -61,7 +61,6 @@ class State:
             self.orientation = orientation
 
             self.angular_speed = 0
-
             if (
                 orientation is None and
                 initialize and

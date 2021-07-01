@@ -51,7 +51,10 @@ class ROSControllerWithSubsets(ROSController):
             speed = np.linalg.norm(vel)
             minval = 0.1 * self.logics[ident].params.get('agent_radius', 0.1)
             if (
-                dist_from_goal < minval and
+                (
+                    dist_from_goal < minval or
+                    len(self.logics[ident].collaborators) == 0
+                 ) and
                 (speed < minval or self.logics[ident].position_logic.rotate)
             ):
                 return True

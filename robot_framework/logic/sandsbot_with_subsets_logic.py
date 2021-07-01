@@ -85,8 +85,9 @@ class SandsbotsPositionWithSubsetsLogic:
         rotation_vel = np.zeros(3)
         max_speed = self.max_speed
 
-        if len(positions_collaborators):
+        if self.goal is not None:
             self.started = True
+        if len(positions_collaborators):
             pos_diffs_collaborators = positions_collaborators - position
             norm_collaborators = np.linalg.norm(pos_diffs_collaborators, axis=1)
             min_distance = np.min(norm_collaborators)
@@ -259,10 +260,9 @@ class SandsbotWithSubsetsLogic(BaseLogic):
                    - small_phase  # np.floor(0.5 * self.small_phase_steps)
                ) * self.time_delta
             )
-            if np.array([s.position for s in states.values()]).any():
-                self.velocity_updates[ident] = self.position_logic.update_position(
-                    state, states
-                )
+            self.velocity_updates[ident] = self.position_logic.update_position(
+                state, states
+            )
             self.orientation_updates[ident] = (
                 self.position_logic.update_orientation(
                     state,
