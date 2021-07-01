@@ -42,6 +42,7 @@ class SandsbotsPositionWithSubsetsLogic:
 
     def update_params(self, params={}):
         self.started = False
+        self.rotate = False
         self.collaborators = params.get('collaborators', None)
         new_goal = params.get('goal', None)
         if new_goal is not None:

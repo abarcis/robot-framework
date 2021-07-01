@@ -49,6 +49,7 @@ class ROSControllerWithSubsets(ROSController):
             })
             self.rf_executor.report_progress(f"{ident}:done")
             self.execution_timers[ident].destroy()
+            self.execution_timers[ident] = None
         return task_finished_callback
 
     def update(self, *args):
