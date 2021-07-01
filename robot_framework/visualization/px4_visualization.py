@@ -36,7 +36,7 @@ CUSTOM_QOS = QoSProfile(
 
 
 class PX4Visualization(BaseVisualization):
-    ALTITUDE = 5
+    ALTITUDE = 15
 
     def __init__(self, namespace):
         self.node = Node('px4_visualization', namespace=namespace)
@@ -117,8 +117,8 @@ class PX4Visualization(BaseVisualization):
         msg.z = -float(self.ALTITUDE)
         msg.vx = float(self.vx)
         msg.vy = float(self.vy)
-        msg.vz = 0.0
-        msg.yaw = self.yaw
+        msg.vz = float("NaN")
+        msg.yaw = float(self.yaw)
 
         self.trajectory_setpoint_publisher_.publish(msg)
 
