@@ -190,7 +190,6 @@ class State:
         return future_state
 
     def predict_gps(self, time_delta=0):
-        print('predicting with gps')
         movement = self.velocity * time_delta
         future_lat = self.position[0] + movement[0] / 111111
         future_lon = (

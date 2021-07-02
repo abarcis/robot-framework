@@ -14,6 +14,10 @@ from robot_framework.logic.discrete_sync_and_swarm_logic import (
 from robot_framework.utils.order_parameters import potential_M_N
 from .state_update import StateUpdate
 from pyquaternion import Quaternion
+from robot_framework.utils.state_utils import (
+    convert_states_to_local,
+    convert_position_to_local
+)
 
 
 class SandsbotsPositionWithSubsetsLogic:
@@ -50,6 +54,14 @@ class SandsbotsPositionWithSubsetsLogic:
         self.goal = new_goal
 
     def update_position(self, state, states):
+        if self.params.get('pos_from_gps'):
+            gps_state = state
+            state, states_list = convert_states_to_local(
+                own_state=state,
+                other_states=list(states.items())
+            )
+            states = dict(states_list)
+
         position = state.position
 
         positions_collaborators = np.array([
@@ -165,14 +177,19 @@ class SandsbotsPositionWithSubsetsLogic:
                 )
                 for j in range(len(norm_others_filtered))
             ]) * self.repulsion_factor, axis=0)
-        goal_attr = 0
+        goal_attr = np.zeros(3)
         if self.goal is not None:
-            goal_diff = self.goal - position
+            goal = self.goal
+            if self.params.get('pos_from_gps'):
+                goal = convert_position_to_local(gps_state.position, self.goal)
+            goal_diff = goal - position
             goal_dist = np.linalg.norm(goal_diff)
             # print(goal_dist)
-            goal_attr = goal_diff * 0.5
+            goal_attraction_coef = self.params.get('goal_attraction', 0.5)
+            goal_repulsion_coef = self.params.get('goal_repulsion', 0.1)
+            goal_attr = goal_diff * goal_attraction_coef
             if self.collaborators == []:
-                goal_attr -= goal_diff * 0.1 / goal_dist**2
+                goal_attr -= goal_diff * goal_repulsion_coef / goal_dist**2
             if self.rotate:
                 x, y, _ = goal_diff
                 radians = -np.pi/2
@@ -230,7 +247,7 @@ class SandsbotWithSubsetsLogic(BaseLogic):
 
     def update_params(self, params):
         self.collaborators = params.get('collaborators', None)
-        self.params = params
+        self.params.update(params)
         self.position_logic.update_params(params)
         self.phase_logic.update_params(params)
 
@@ -255,10 +272,11 @@ class SandsbotWithSubsetsLogic(BaseLogic):
                 )
             ]
             state = state.predict(
-               (
-                   self.small_phase_steps
-                   - small_phase  # np.floor(0.5 * self.small_phase_steps)
-               ) * self.time_delta
+                (
+                    self.small_phase_steps
+                    - small_phase  # np.floor(0.5 * self.small_phase_steps)
+                ) * self.time_delta,
+                self.params.get('pos_from_gps', False)
             )
             self.velocity_updates[ident] = self.position_logic.update_position(
                 state, states

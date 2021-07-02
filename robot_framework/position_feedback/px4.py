@@ -42,7 +42,7 @@ class PX4PositionFeedback:
         return self.poses[ident]['position']
 
     def get_new_orientation(self, ident):
-        return self.poses[ident]['orientation']
+        return self.system_state.states[ident].orientation
 
     def get_node(self):
         return self.node

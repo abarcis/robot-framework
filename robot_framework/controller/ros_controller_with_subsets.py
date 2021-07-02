@@ -3,7 +3,10 @@
 import numpy as np
 
 from robot_framework.controller.ros_controller import ROSController
-from robot_framework.utils.state_utils import convert_states_to_local
+from robot_framework.utils.state_utils import (
+    convert_states_to_local,
+    convert_position_to_local
+)
 
 
 class ROSControllerWithSubsets(ROSController):
@@ -11,13 +14,13 @@ class ROSControllerWithSubsets(ROSController):
 
     def __init__(self, *args, **kwargs):
         logic_class = kwargs.pop('logic_class')
-        initial_params = kwargs.pop('initial_params')
-        self.task_execution_time = initial_params.get('task_execution_time', 5)
+        self.params = kwargs.pop('initial_params')
+        self.task_execution_time = self.params.get('task_execution_time', 5)
         self.camera_interface = kwargs.pop('camera_interface', None)
         super().__init__(*args, **kwargs)
 
         self.logics = {
-            ident: logic_class(initial_params)
+            ident: logic_class(self.params)
             for ident in self.system_state.states.keys()
         }
         self.execution_timers = {}
@@ -39,23 +42,39 @@ class ROSControllerWithSubsets(ROSController):
         if self.logics[ident].collaborators is None or not self.logics[ident].position_logic.started:
             return False
         if self.logics[ident].collaborators is not None:
-            positions = np.array(
-                [self.system_state.states[ident].position] +
-                [self.system_state.states[i].position for i in self.logics[ident].collaborators]
-            )
+            if self.pos_from_gps:
+                own_local, other_local = convert_states_to_local(
+                    self.system_state.states[ident],
+                    self.system_state.knowledge.get_states_except_own(ident)
+                )
+                positions = np.array(
+                    [own_local.position] +
+                    [s.position for i, s in other_local if i in self.logics[ident].collaborators]
+                )
+                goal = convert_position_to_local(
+                    self.system_state.states[ident].position,
+                    self.logics[ident].position_logic.goal
+                )
+            else:
+                positions = np.array(
+                    [self.system_state.states[ident].position] +
+                    [self.system_state.knowledge.get_state(ident, i).position for i in self.logics[ident].collaborators]
+                )
+                goal = self.logics[ident].position_logic.goal
+            goal_min_speed = self.params.get('goal_min_speed', 0.01)
+            goal_min_distance = self.params.get('goal_min_distance', 0.01)
             centroid = np.mean(positions, axis=0)
             dist_from_goal = np.linalg.norm(
-                self.logics[ident].position_logic.goal - centroid
+                goal - centroid
             )
             vel = self.system_state.states[ident].velocity
             speed = np.linalg.norm(vel)
-            minval = 0.1 * self.logics[ident].params.get('agent_radius', 0.1)
             if (
                 (
-                    dist_from_goal < minval or
+                    dist_from_goal < goal_min_distance or
                     len(self.logics[ident].collaborators) == 0
                  ) and
-                (speed < minval or self.logics[ident].position_logic.rotate)
+                (speed < goal_min_speed or self.logics[ident].position_logic.rotate)
             ):
                 return True
             # vel = self.system_state.states[ident].velocity
@@ -99,11 +118,11 @@ class ROSControllerWithSubsets(ROSController):
             other_states = (
                 self.system_state.knowledge.get_states_except_own(ident)
             )
-            if self.pos_from_gps:
-                own_state, other_states = convert_states_to_local(
-                    own_state=own_state,
-                    other_states=other_states
-                )
+            # if self.pos_from_gps:
+            #     own_state, other_states = convert_states_to_local(
+            #         own_state=own_state,
+            #         other_states=other_states
+            #     )
 
             other_states_dict = {
                 ident: state for ident, state in other_states
