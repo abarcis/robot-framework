@@ -32,11 +32,9 @@ CUSTOM_QOS = QoSProfile(
     durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_VOLATILE,
 )
 
-# TODO adjust for PX4, for now only copied version for Balboas
-
 
 class PX4Visualization(BaseVisualization):
-    ALTITUDE = 15
+    ALTITUDE = 6.5
 
     def __init__(self, namespace):
         self.node = Node('px4_visualization', namespace=namespace)

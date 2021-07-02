@@ -72,9 +72,16 @@ class ROSControllerWithSubsets(ROSController):
             if (
                 (
                     dist_from_goal < goal_min_distance or
-                    len(self.logics[ident].collaborators) == 0
-                 ) and
-                (speed < goal_min_speed or self.logics[ident].position_logic.rotate)
+                    (
+                        len(self.logics[ident].collaborators) == 0 and
+                        speed < goal_min_speed or self.logics[ident].position_logic.rotate
+                    )
+                )
+                # (
+                #     dist_from_goal < goal_min_distance or
+                #     len(self.logics[ident].collaborators) == 0
+                #  ) and
+                # (speed < goal_min_speed or self.logics[ident].position_logic.rotate)
             ):
                 return True
             # vel = self.system_state.states[ident].velocity

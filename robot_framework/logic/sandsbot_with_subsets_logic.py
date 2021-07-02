@@ -96,13 +96,32 @@ class SandsbotsPositionWithSubsetsLogic:
         step_size = 1
         rotation_vel = np.zeros(3)
         max_speed = self.max_speed
+        norm_others = []
+        norm_collaborators = []
 
         if self.goal is not None:
             self.started = True
+        if len(positions_others):
+            pos_diffs_others = positions_others - position
+            norm_others = np.linalg.norm(pos_diffs_others, axis=1)
+            norm_others_filtered = norm_others[norm_others < self.repulsion_range]
+            pos_diffs_others_filtered = pos_diffs_others[
+                norm_others < self.repulsion_range
+            ]
+            rep_others = np.sum(np.array([
+                pos_diffs_others_filtered[j]/(
+                    max(
+                        norm_others_filtered[j] - self.agent_radius * 2, self.min_distance
+                    ) * norm_others_filtered[j]
+                )
+                for j in range(len(norm_others_filtered))
+            ]) * self.repulsion_factor, axis=0)
         if len(positions_collaborators):
             pos_diffs_collaborators = positions_collaborators - position
             norm_collaborators = np.linalg.norm(pos_diffs_collaborators, axis=1)
-            min_distance = np.min(norm_collaborators)
+        distances = np.append(norm_others, norm_collaborators)
+        if len(distances):
+            min_distance = min(distances)
             max_speed = min(
                 self.max_speed,
                 max(
@@ -110,6 +129,10 @@ class SandsbotsPositionWithSubsetsLogic:
                     0.0001
                 ) / (4 * self.time_step)
             )
+        else:
+            max_speed = self.max_speed
+
+        if len(positions_collaborators):
             step_size = 1
             if self.speed_limit:
                 worst_case_distances = (
@@ -125,8 +148,10 @@ class SandsbotsPositionWithSubsetsLogic:
                 step_size = 1. / 2. / max_gradient / self.time_step
 
             attr = np.array([
-                norm_collaborators[j] *
-                pos_diffs_collaborators[j]/norm_collaborators[j]
+                (
+                    norm_collaborators[j] if norm_collaborators[j] < self.params.get('attraction_range')
+                    else 1
+                ) * pos_diffs_collaborators[j]/norm_collaborators[j]
                 for j in range(len(norm_collaborators))
             ]) * self.attraction_factor
             if self.sync_interaction:
@@ -162,21 +187,6 @@ class SandsbotsPositionWithSubsetsLogic:
                 )
                 for j in range(len(norm_collaborators))
             ]) * self.repulsion_factor
-        if len(positions_others):
-            pos_diffs_others = positions_others - position
-            norm_others = np.linalg.norm(pos_diffs_others, axis=1)
-            norm_others_filtered = norm_others[norm_others < self.repulsion_range]
-            pos_diffs_others_filtered = pos_diffs_others[
-                norm_others < self.repulsion_range
-            ]
-            rep_others = np.sum(np.array([
-                pos_diffs_others_filtered[j]/(
-                    max(
-                        norm_others_filtered[j] - self.agent_radius * 2, self.min_distance
-                    ) * norm_others_filtered[j]
-                )
-                for j in range(len(norm_others_filtered))
-            ]) * self.repulsion_factor, axis=0)
         goal_attr = np.zeros(3)
         if self.goal is not None:
             goal = self.goal
@@ -187,9 +197,19 @@ class SandsbotsPositionWithSubsetsLogic:
             # print(goal_dist)
             goal_attraction_coef = self.params.get('goal_attraction', 0.5)
             goal_repulsion_coef = self.params.get('goal_repulsion', 0.1)
-            goal_attr = goal_diff * goal_attraction_coef
+            goal_const_speed = self.params.get('goal_const_speed', 0.1)
+            goal_attr_dist = self.params.get('goal_attr_dist', 10)
+            if goal_dist > goal_attr_dist:
+                goal_attr = goal_diff / goal_dist * goal_const_speed
+            else:
+                goal_attr = goal_diff * goal_attraction_coef
+
+            print('goal distance', goal_dist, 'goal speed', np.linalg.norm(goal_attr))
             if self.collaborators == []:
-                goal_attr -= goal_diff * goal_repulsion_coef / goal_dist**2
+                goal_attr -= (
+                    goal_diff/goal_dist * goal_repulsion_coef /
+                    (goal_dist - self.params.get('agent_radius', 0.1))
+                )
             if self.rotate:
                 x, y, _ = goal_diff
                 radians = -np.pi/2
@@ -214,6 +234,7 @@ class SandsbotsPositionWithSubsetsLogic:
         else:
             vel = np.zeros(3)
         vel[2] = 0  # controlling only XY
+        print("VELOCITY:", vel)
 
         return vel
 
