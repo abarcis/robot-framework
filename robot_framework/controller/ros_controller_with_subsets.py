@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import numpy as np
+from pathlib import Path
 
 from robot_framework.controller.ros_controller import ROSController
 from robot_framework.utils.state_utils import (
@@ -95,6 +96,9 @@ class ROSControllerWithSubsets(ROSController):
 
     def task_finished(self, ident):
         def task_finished_callback():
+            if self.params.get('create_file'):
+                poi_found_file = Path(self.params.get('create_file'))
+                poi_found_file.unlink(missing_ok=True)
             self.logics[ident].update_params({
                 'collaborators': None,
                 'goal': None,
@@ -164,6 +168,9 @@ class ROSControllerWithSubsets(ROSController):
                 if self.pattern_formed(ident):
                     if self.execution_timers.get(ident) is None:
                         print(ident, "pattern formed")
+                        if self.params.get('create_file'):
+                            poi_found_file = Path(self.params.get('create_file'))
+                            poi_found_file.touch(exist_ok=True)
                         self.logics[ident].position_logic.rotate = True
                         self.execution_timers[ident] = self.node.create_timer(
                             self.task_execution_time,

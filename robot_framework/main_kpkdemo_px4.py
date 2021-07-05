@@ -19,7 +19,6 @@ from robot_framework.visualization.px4_visualization import (
 )
 from robot_framework.logger.state_log import StateLog
 
-from robot_framework.camera import Camera
 import rclpy
 import sys
 
@@ -27,6 +26,9 @@ import socket
 
 DEFAULT_IDENT = "a{}"
 CAMERA_ON = False
+if CAMERA_ON:
+    from robot_framework.camera import Camera
+
 
 
 def main():
@@ -71,12 +73,13 @@ def main():
         'repulsion_range': 30,
         'task_execution_time': 60,
         'task_execution_speed': 0.5,
-        'goal_min_distance': 1,
+        'goal_min_distance': 2,
         'goal_min_speed': 0.5,
         'goal_attraction': 0.2,
         'goal_repulsion': 2.5,
         'goal_const_speed': 2,
         'goal_attr_dist': 10,
+        'create_file': '/tmp/poi_found',
     }
     initial_params.update(params_presets[0])
 
