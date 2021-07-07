@@ -80,6 +80,7 @@ def main():
     node = Node('controller')
     communication = ROSCommunication(
         system_state,
+        agent_id=ids[0],
         node=node,
         params=initial_params,
     )

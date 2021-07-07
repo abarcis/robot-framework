@@ -39,7 +39,7 @@ def main():
     ids = [
         f'{agent}' for agent in range(1, agents_num+1)
     ]
-    time_delta = 0.1
+    time_delta = 0.5
     small_phase_steps = 2
 
     params_presets = [
@@ -55,20 +55,28 @@ def main():
 
     initial_params = {
         'phase_levels_number': 24,
-        'agent_radius': 0.1,
-        'min_distance': 0.1,
+        'agent_radius': 2.5,
+        'min_distance': 1,
         'time_delta': time_delta,
         'small_phase_steps': small_phase_steps,
         'orientation_mode': True,
         'constraint_mode': False,
-        'attraction_factor': 0.75,
-        'repulsion_factor': 2,
+        'area_size': 200,
+        'attraction_factor': 0.1,
+        'attraction_range': 30,
+        'repulsion_factor': 30,
         'pos_from_gps': False,
         'phase_interaction': False,
-        'max_speed': 0.2,
-        'repulsion_range': 1,
-        'task_execution_time': 5,
-        'task_execution_speed': 0.1,
+        'max_speed': 5,
+        'repulsion_range': 30,
+        'task_execution_time': 60,
+        'task_execution_speed': 0.5,
+        'goal_min_distance': 1,
+        'goal_min_speed': 0.5,
+        'goal_attraction': 0.2,
+        'goal_repulsion': 2.5,
+        'goal_const_speed': 2,
+        'goal_attr_dist': 10,
     }
     initial_params.update(params_presets[0])
 

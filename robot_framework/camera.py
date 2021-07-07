@@ -8,7 +8,7 @@ class Camera:
     def __init__(self, path="/home/pi/log/imgs"):
         self.CAM_FPS = 10
 
-        CAPTURED_IMG_SIZE = (640, 480)
+        CAPTURED_IMG_SIZE = (1920, 1080)
         # CAPTURED_IMG_SIZE = (800, 600)
         self.cam = cv2.VideoCapture(0)
         self.cam.set(cv2.CAP_PROP_FPS, self.CAM_FPS)
@@ -31,8 +31,8 @@ class Camera:
         if frame is None:
             raise Exception('Image cannot be retrieved. Disconnected camera?')
         # frame = cv2.resize(frame, (320, 240))
-        jpg = bytearray(cv2.imencode('.jpg', frame)[1])
-        return jpg
+        # jpg = bytearray(cv2.imencode('.jpg', frame)[1])
+        return frame
 
     def save_picture(self, image):
         cv2.imwrite(f'{self.path}/{datetime.now()}.jpg', image)

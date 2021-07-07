@@ -44,13 +44,18 @@ def lon_dist(lon1, lon2, lat):
         return -dist
 
 
+def convert_position_to_local(own_position, other_position):
+    x = lat_dist(own_position[0], other_position[0])
+    y = lon_dist(own_position[1], other_position[1], own_position[0])
+    relative_position = np.array([x, y, 0])
+    return relative_position
+
+
 def convert_states_to_local(own_state, other_states):
     own_relative = State(state=own_state, position=np.zeros(3))
     other_relative = []
     for ident, state in other_states:
-        x = lat_dist(own_state.position[0], state.position[0])
-        y = lon_dist(own_state.position[1], state.position[1], own_state.position[0])
-        relative_position = np.array([x, y, 0])
+        relative_position = convert_position_to_local(own_state.position, state.position)
         other_relative.append(
             (ident, State(state=state, position=relative_position))
         )

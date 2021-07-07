@@ -86,7 +86,7 @@ class LiveVisualization(BaseVisualization):
                     c=colors,
                     vmin=vmin,
                     vmax=vmax,
-                    s=s
+                    # s=s
                 )
                 # plt.pause(0.001)
             else:

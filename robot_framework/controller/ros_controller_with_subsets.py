@@ -1,9 +1,13 @@
 #! /usr/bin/env python
 
 import numpy as np
+from pathlib import Path
 
 from robot_framework.controller.ros_controller import ROSController
-from robot_framework.utils.state_utils import convert_states_to_local
+from robot_framework.utils.state_utils import (
+    convert_states_to_local,
+    convert_position_to_local
+)
 
 
 class ROSControllerWithSubsets(ROSController):
@@ -11,13 +15,13 @@ class ROSControllerWithSubsets(ROSController):
 
     def __init__(self, *args, **kwargs):
         logic_class = kwargs.pop('logic_class')
-        initial_params = kwargs.pop('initial_params')
-        self.task_execution_time = initial_params.get('task_execution_time', 5)
+        self.params = kwargs.pop('initial_params')
+        self.task_execution_time = self.params.get('task_execution_time', 5)
         self.camera_interface = kwargs.pop('camera_interface', None)
         super().__init__(*args, **kwargs)
 
         self.logics = {
-            ident: logic_class(initial_params)
+            ident: logic_class(self.params)
             for ident in self.system_state.states.keys()
         }
         self.execution_timers = {}
@@ -26,6 +30,9 @@ class ROSControllerWithSubsets(ROSController):
         collaborators = params.get('collaborators', None)
         for ident, logic in self.logics.items():
             if collaborators is None or ident in collaborators:
+                if self.execution_timers.get(ident):
+                    self.node.destroy_timer(self.execution_timers[ident])
+                    self.execution_timers[ident] = None
                 new_params = params.copy()
                 new_params['collaborators'] = params['collaborators'].copy()
                 if collaborators:
@@ -36,24 +43,69 @@ class ROSControllerWithSubsets(ROSController):
         if self.logics[ident].collaborators is None or not self.logics[ident].position_logic.started:
             return False
         if self.logics[ident].collaborators is not None:
+            if self.pos_from_gps:
+                own_local, other_local = convert_states_to_local(
+                    self.system_state.states[ident],
+                    self.system_state.knowledge.get_states_except_own(ident)
+                )
+                positions = np.array(
+                    [own_local.position] +
+                    [s.position for i, s in other_local if i in self.logics[ident].collaborators]
+                )
+                goal = convert_position_to_local(
+                    self.system_state.states[ident].position,
+                    self.logics[ident].position_logic.goal
+                )
+            else:
+                positions = np.array(
+                    [self.system_state.states[ident].position] +
+                    [self.system_state.knowledge.get_state(ident, i).position for i in self.logics[ident].collaborators]
+                )
+                goal = self.logics[ident].position_logic.goal
+            goal_min_speed = self.params.get('goal_min_speed', 0.01)
+            goal_min_distance = self.params.get('goal_min_distance', 0.01)
+            centroid = np.mean(positions, axis=0)
+            dist_from_goal = np.linalg.norm(
+                goal - centroid
+            )
             vel = self.system_state.states[ident].velocity
             speed = np.linalg.norm(vel)
             if (
-                self.logics[ident].position_logic.rotate or
-                speed < 0.1 * self.logics[ident].params.get('agent_radius', 0.1)
+                (
+                    dist_from_goal < goal_min_distance or
+                    (
+                        len(self.logics[ident].collaborators) == 0 and
+                        speed < goal_min_speed or self.logics[ident].position_logic.rotate
+                    )
+                )
+                # (
+                #     dist_from_goal < goal_min_distance or
+                #     len(self.logics[ident].collaborators) == 0
+                #  ) and
+                # (speed < goal_min_speed or self.logics[ident].position_logic.rotate)
             ):
                 return True
+            # vel = self.system_state.states[ident].velocity
+            # speed = np.linalg.norm(vel)
+            # if (
+            #     self.logics[ident].position_logic.rotate or
+            #     speed < 0.1 * self.logics[ident].params.get('agent_radius', 0.1)
+            # ):
+            #     return True
         return False
 
     def task_finished(self, ident):
         def task_finished_callback():
+            if self.params.get('create_file'):
+                poi_found_file = Path(self.params.get('create_file'))
+                poi_found_file.unlink(missing_ok=True)
             self.logics[ident].update_params({
                 'collaborators': None,
                 'goal': None,
             })
-            self.rf_executor.report_progress(f"{ident}:done")
-            self.execution_timers[ident].destroy()
+            self.node.destroy_timer(self.execution_timers[ident])
             self.execution_timers[ident] = None
+            self.rf_executor.report_progress(f"{ident}:done")
         return task_finished_callback
 
     def take_picture_callback(self):
@@ -77,11 +129,11 @@ class ROSControllerWithSubsets(ROSController):
             other_states = (
                 self.system_state.knowledge.get_states_except_own(ident)
             )
-            if self.pos_from_gps:
-                own_state, other_states = convert_states_to_local(
-                    own_state=own_state,
-                    other_states=other_states
-                )
+            # if self.pos_from_gps:
+            #     own_state, other_states = convert_states_to_local(
+            #         own_state=own_state,
+            #         other_states=other_states
+            #     )
 
             other_states_dict = {
                 ident: state for ident, state in other_states
@@ -116,6 +168,9 @@ class ROSControllerWithSubsets(ROSController):
                 if self.pattern_formed(ident):
                     if self.execution_timers.get(ident) is None:
                         print(ident, "pattern formed")
+                        if self.params.get('create_file'):
+                            poi_found_file = Path(self.params.get('create_file'))
+                            poi_found_file.touch(exist_ok=True)
                         self.logics[ident].position_logic.rotate = True
                         self.execution_timers[ident] = self.node.create_timer(
                             self.task_execution_time,

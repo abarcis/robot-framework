@@ -4,10 +4,12 @@ import time
 
 from rclpy.node import Node
 
-from .controller.ros_controller import (
-    ROSController
+from robot_framework.controller.ros_controller_with_subsets import (
+    ROSControllerWithSubsets
 )
-from robot_framework.logic.discrete_sync_and_swarm_logic import DiscreteLogic
+from robot_framework.logic.sandsbot_with_subsets_logic import (
+    SandsbotWithSubsetsLogic
+)
 from robot_framework.position_feedback.px4 import PX4PositionFeedback
 from robot_framework.knowledge.separate_knowledge import SeparateKnowledge
 from robot_framework.communication.ros_communication import ROSCommunication
@@ -23,6 +25,10 @@ import sys
 import socket
 
 DEFAULT_IDENT = "a{}"
+CAMERA_ON = False
+if CAMERA_ON:
+    from robot_framework.camera import Camera
+
 
 
 def main():
@@ -56,17 +62,27 @@ def main():
         'min_distance': 1,
         'time_delta': time_delta,
         'small_phase_steps': small_phase_steps,
-        'orientation_mode': False,
+        'orientation_mode': True,
         'constraint_mode': False,
         'attraction_factor': 0.1,
+        'attraction_range': 30,
         'repulsion_factor': 30,
         'pos_from_gps': True,
         'phase_interaction': False,
         'max_speed': 5,
+        'repulsion_range': 20,
+        'task_execution_time': 30,
+        'task_execution_speed': 1,
+        'goal_min_distance': 2,
+        'goal_min_speed': 0.5,
+        'goal_attraction': 0.2,
+        'goal_repulsion': 2.5,
+        'goal_const_speed': 2,
+        'goal_attr_dist': 10,
+        'create_file': '/tmp/poi_found',
     }
     initial_params.update(params_presets[0])
 
-    logic = DiscreteLogic(initial_params)
     knowledge = SeparateKnowledge(ids)
     system_state = SystemState(ids, knowledge, params=initial_params)
     position_feedback = PX4PositionFeedback(system_state, time_delta)
@@ -81,10 +97,13 @@ def main():
         PX4Visualization(f"d{ident}")
         for ident in ids
     ]
-    logger = StateLog(initial_params, path='/home/pi/log')
-    controller = ROSController(
+    if CAMERA_ON:
+        camera_interface = Camera()
+    else:
+        camera_interface = None
+    logger = StateLog(initial_params, path=None)  # '/home/pi/log')
+    controller = ROSControllerWithSubsets(
         0,
-        logic=logic,
         position_feedback=position_feedback,
         communication=communication,
         system_state=system_state,
@@ -95,7 +114,10 @@ def main():
         time_delta=time_delta,
         small_phase_steps=small_phase_steps,
         node=node,
+        logic_class=SandsbotWithSubsetsLogic,
+        initial_params=initial_params,
         pos_from_gps=True,
+        camera_interface=camera_interface,
     )
 
     controller.run(
