@@ -234,7 +234,7 @@ class SandsbotsPositionWithSubsetsLogic:
         else:
             vel = np.zeros(3)
         vel[2] = 0  # controlling only XY
-        print("VELOCITY:", vel)
+        # print("VELOCITY:", vel)
 
         return vel
 
