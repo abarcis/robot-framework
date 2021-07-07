@@ -25,7 +25,6 @@ import sys
 import socket
 
 DEFAULT_IDENT = "a{}"
-CAMERA_ON = True
 CAMERA_ON = False
 if CAMERA_ON:
     from robot_framework.camera import Camera
@@ -71,12 +70,12 @@ def main():
         'pos_from_gps': True,
         'phase_interaction': False,
         'max_speed': 5,
-        'repulsion_range': 15,
+        'repulsion_range': 20,
         'task_execution_time': 30,
-        'task_execution_speed': 4,
+        'task_execution_speed': 1,
         'goal_min_distance': 2,
         'goal_min_speed': 0.5,
-        'goal_attraction': 0.05,
+        'goal_attraction': 0.2,
         'goal_repulsion': 2.5,
         'goal_const_speed': 2,
         'goal_attr_dist': 10,
