@@ -120,6 +120,7 @@ class SandsbotsPositionWithSubsetsLogic:
             pos_diffs_collaborators = positions_collaborators - position
             norm_collaborators = np.linalg.norm(pos_diffs_collaborators, axis=1)
         distances = np.append(norm_others, norm_collaborators)
+        print('DISTANCES', distances)
         if len(distances):
             min_distance = min(distances)
             max_speed = min(
@@ -232,7 +233,9 @@ class SandsbotsPositionWithSubsetsLogic:
 
             vel = vel/vel_norm * speed
         else:
+            speed = 0
             vel = np.zeros(3)
+        print("VELOCITY INIT", vel_norm, "SPEED", speed)
         vel[2] = 0  # controlling only XY
         # print("VELOCITY:", vel)
 

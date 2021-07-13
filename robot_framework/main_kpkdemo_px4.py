@@ -69,7 +69,7 @@ def main():
         'repulsion_factor': 30,
         'pos_from_gps': True,
         'phase_interaction': False,
-        'max_speed': 5,
+        'max_speed': 2.5,
         'repulsion_range': 15,
         'task_execution_time': 30,
         'task_execution_speed': 1,
